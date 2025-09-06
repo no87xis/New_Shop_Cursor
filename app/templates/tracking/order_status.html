@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Отслеживание заказа {{ order.order_code }} - Sirius Group V2{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">
+            <i class="fas fa-search mr-2"></i>Отслеживание заказа
+        </h1>
+        <p class="text-gray-600">
+            Информация о статусе вашего заказа
+        </p>
+    </div>
+
+    <!-- Order Information -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="flex justify-between items-start mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">Заказ №{{ order.order_code }}</h2>
+                <p class="text-gray-600">
+                    {% if order_type == 'shop_order' %}
+                        {{ order.customer_name }} • {{ order.customer_phone }}
+                    {% else %}
+                        {{ order.customer_name or 'Не указано' }} • {{ order.phone }}
+                    {% endif %}
+                </p>
+            </div>
+            <div class="text-right">
+                <p class="text-sm text-gray-500">Создан</p>
+                <p class="font-medium">{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+            </div>
+        </div>
+
+        <!-- Status -->
+        <div class="mb-6">
+            <div class="flex items-center mb-4">
+                <div class="w-4 h-4 rounded-full mr-3
+                    {% if status_info.color == 'green' %}bg-green-500
+                    {% elif status_info.color == 'blue' %}bg-blue-500
+                    {% elif status_info.color == 'yellow' %}bg-yellow-500
+                    {% elif status_info.color == 'red' %}bg-red-500
+                    {% else %}bg-gray-500{% endif %}">
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800">{{ status_info.status_text }}</h3>
+            </div>
+            <p class="text-gray-600 mb-4">{{ status_info.status_description }}</p>
+            
+            <!-- Progress Bar -->
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="h-2 rounded-full
+                    {% if status_info.color == 'green' %}bg-green-500
+                    {% elif status_info.color == 'blue' %}bg-blue-500
+                    {% elif status_info.color == 'yellow' %}bg-yellow-500
+                    {% elif status_info.color == 'red' %}bg-red-500
+                    {% else %}bg-gray-500{% endif %}"
+                    style="width: 
+                    {% if status_info.status == 'completed' or status_info.status == 'paid_issued' %}100%
+                    {% elif status_info.status == 'ready_for_pickup' %}80%
+                    {% elif status_info.status == 'paid' or status_info.status == 'paid_not_issued' %}60%
+                    {% elif status_info.status == 'paid_pending' %}40%
+                    {% else %}20%{% endif %}">
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Details -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h4 class="font-semibold text-gray-800 mb-2">Детали заказа</h4>
+                <div class="space-y-2 text-sm">
+                    {% if order_type == 'shop_order' %}
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Товар:</span>
+                            <span class="font-medium">{{ order.product_name }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Количество:</span>
+                            <span class="font-medium">{{ order.quantity }} шт.</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Цена за единицу:</span>
+                            <span class="font-medium">{{ "%.2f"|format(order.unit_price_rub) }} ₽</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Стоимость доставки:</span>
+                            <span class="font-medium">{{ "%.2f"|format(order.delivery_cost_rub or 0) }} ₽</span>
+                        </div>
+                        <div class="flex justify-between border-t pt-2">
+                            <span class="text-gray-600 font-semibold">Итого:</span>
+                            <span class="font-bold text-lg">{{ "%.2f"|format(order.total_amount) }} ₽</span>
+                        </div>
+                    {% else %}
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Товар:</span>
+                            <span class="font-medium">{{ order.product_name or 'Не указан' }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Количество:</span>
+                            <span class="font-medium">{{ order.qty }} шт.</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Цена за единицу:</span>
+                            <span class="font-medium">{{ "%.2f"|format(order.unit_price_rub) }} ₽</span>
+                        </div>
+                        <div class="flex justify-between border-t pt-2">
+                            <span class="text-gray-600 font-semibold">Итого:</span>
+                            <span class="font-bold text-lg">{{ "%.2f"|format(order.unit_price_rub * order.qty) }} ₽</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div>
+                <h4 class="font-semibold text-gray-800 mb-2">Информация о доставке</h4>
+                <div class="space-y-2 text-sm">
+                    {% if order_type == 'shop_order' %}
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Способ доставки:</span>
+                            <span class="font-medium">
+                                {% if order.delivery_option == 'SELF_PICKUP_GROZNY' %}Самовывоз
+                                {% elif order.delivery_option == 'COURIER_GROZNY' %}Доставка по Грозному
+                                {% elif order.delivery_option == 'COURIER_MAK' %}Доставка в Махачкалу
+                                {% elif order.delivery_option == 'COURIER_KHAS' %}Доставка в Хасавюрт
+                                {% elif order.delivery_option == 'COURIER_OTHER' %}Другая доставка
+                                {% else %}{{ order.delivery_option }}{% endif %}
+                            </span>
+                        </div>
+                        {% if order.delivery_city_other %}
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Город:</span>
+                            <span class="font-medium">{{ order.delivery_city_other }}</span>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Город:</span>
+                            <span class="font-medium">{{ order.client_city or 'Не указан' }}</span>
+                        </div>
+                    {% endif %}
+                    
+                    {% if status_info.status == 'ready_for_pickup' %}
+                    <div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <div class="flex items-center">
+                            <i class="fas fa-map-marker-alt text-green-600 mr-2"></i>
+                            <div>
+                                <p class="font-medium text-green-800">Пункт выдачи</p>
+                                <p class="text-sm text-green-600">Наш склад, ул. Примерная, 123</p>
+                                <p class="text-sm text-green-600">Пн-Пт: 10:00-19:00, Сб: 10:00-16:00</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- WhatsApp Notification -->
+    {% if order_type == 'shop_order' and order.consent_whatsapp and order.whatsapp_phone %}
+    <div class="bg-green-50 border border-green-200 rounded-lg p-6 mb-8">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <i class="fab fa-whatsapp text-green-600 text-2xl"></i>
+            </div>
+            <div class="ml-4">
+                <h3 class="text-lg font-medium text-green-800">Уведомления WhatsApp</h3>
+                <p class="text-green-600">
+                    Вы будете получать уведомления о статусе заказа на номер {{ order.whatsapp_phone }}
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Actions -->
+    <div class="flex flex-col sm:flex-row gap-4">
+        <a href="/shop/" class="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300 text-center">
+            <i class="fas fa-shopping-bag mr-2"></i>Продолжить покупки
+        </a>
+        <a href="/" class="flex-1 bg-gray-100 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-200 transition duration-300 text-center">
+            <i class="fas fa-home mr-2"></i>На главную
+        </a>
+    </div>
+</div>
+{% endblock %}

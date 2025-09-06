@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Главная - Sirius Group V2{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="gradient-bg text-white py-20">
+    <div class="max-w-7xl mx-auto px-4 text-center">
+        <h1 class="text-4xl md:text-6xl font-bold mb-6">
+            Добро пожаловать в Sirius Group
+        </h1>
+        <p class="text-xl md:text-2xl mb-8 text-blue-100">
+            Система управления складом и интернет-магазин с WhatsApp уведомлениями
+        </p>
+        <div class="space-x-4">
+            <a href="/shop/" class="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition duration-300">
+                <i class="fas fa-shopping-bag mr-2"></i>Перейти в магазин
+            </a>
+            <a href="/admin" class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition duration-300">
+                <i class="fas fa-cog mr-2"></i>Админ панель
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4">
+        <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">
+            Наши возможности
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="text-center">
+                <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-store text-blue-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Интернет-магазин</h3>
+                <p class="text-gray-600">Полнофункциональный магазин с корзиной и системой заказов</p>
+            </div>
+            <div class="text-center">
+                <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-warehouse text-green-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Управление складом</h3>
+                <p class="text-gray-600">Отслеживание остатков и управление товарами</p>
+            </div>
+            <div class="text-center">
+                <div class="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-qrcode text-purple-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">QR-коды</h3>
+                <p class="text-gray-600">Отслеживание заказов с помощью QR-кодов</p>
+            </div>
+            <div class="text-center">
+                <div class="bg-orange-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fab fa-whatsapp text-orange-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">WhatsApp уведомления</h3>
+                <p class="text-gray-600">Автоматические уведомления клиентам о готовности заказов</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="py-16 bg-gray-100">
+    <div class="max-w-7xl mx-auto px-4">
+        <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">
+            Статистика системы
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                <div class="text-3xl font-bold text-blue-600 mb-2">{{ total_products or 0 }}</div>
+                <div class="text-gray-600">Товаров в каталоге</div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                <div class="text-3xl font-bold text-green-600 mb-2">{{ total_orders or 0 }}</div>
+                <div class="text-gray-600">Заказов обработано</div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                <div class="text-3xl font-bold text-purple-600 mb-2">{{ total_shop_orders or 0 }}</div>
+                <div class="text-gray-600">Заказов из магазина</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Recent Products Section -->
+{% if recent_products %}
+<section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4">
+        <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">
+            Последние товары
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for product in recent_products %}
+            <div class="bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300">
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-2">{{ product.name }}</h3>
+                    <p class="text-gray-600 mb-4">{{ product.description or "Описание отсутствует" }}</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-2xl font-bold text-blue-600">
+                            {{ "%.2f"|format(product.sell_price_rub or 0) }} ₽
+                        </span>
+                        <span class="text-sm text-gray-500">
+                            В наличии: {{ product.quantity }}
+                        </span>
+                    </div>
+                    <div class="mt-4">
+                        <a href="/shop/product/{{ product.id }}" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 text-center block">
+                            <i class="fas fa-eye mr-2"></i>Подробнее
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-8">
+            <a href="/shop/" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-300">
+                <i class="fas fa-shopping-bag mr-2"></i>Смотреть все товары
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- CTA Section -->
+<section class="py-16 bg-blue-600 text-white">
+    <div class="max-w-7xl mx-auto px-4 text-center">
+        <h2 class="text-3xl font-bold mb-6">
+            Готовы начать покупки?
+        </h2>
+        <p class="text-xl mb-8 text-blue-100">
+            Перейдите в наш магазин и выберите нужные товары
+        </p>
+        <a href="/shop/" class="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition duration-300">
+            <i class="fas fa-shopping-bag mr-2"></i>Начать покупки
+        </a>
+    </div>
+</section>
+{% endblock %}

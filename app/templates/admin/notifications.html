@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}Управление уведомлениями - Sirius Group V2{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">
+            <i class="fab fa-whatsapp mr-2"></i>Управление уведомлениями
+        </h1>
+        <p class="text-gray-600">
+            Отправка WhatsApp уведомлений клиентам
+        </p>
+    </div>
+
+    <!-- Status Messages -->
+    {% if request.query_params.get('message') %}
+    <div class="mb-6">
+        {% set message = request.query_params.get('message') %}
+        {% if message == 'no_ready_orders' %}
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div class="flex">
+                <i class="fas fa-exclamation-triangle text-yellow-600 mt-1 mr-3"></i>
+                <div>
+                    <h3 class="text-sm font-medium text-yellow-800">Нет готовых заказов</h3>
+                    <p class="text-sm text-yellow-700">В данный момент нет заказов готовых к выдаче</p>
+                </div>
+            </div>
+        </div>
+        {% elif message == 'no_recipients' %}
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div class="flex">
+                <i class="fas fa-exclamation-triangle text-yellow-600 mt-1 mr-3"></i>
+                <div>
+                    <h3 class="text-sm font-medium text-yellow-800">Нет получателей</h3>
+                    <p class="text-sm text-yellow-700">Нет клиентов с согласием на WhatsApp уведомления</p>
+                </div>
+            </div>
+        </div>
+        {% elif message.startswith('sent_') %}
+        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div class="flex">
+                <i class="fas fa-check-circle text-green-600 mt-1 mr-3"></i>
+                <div>
+                    <h3 class="text-sm font-medium text-green-800">Уведомления отправлены</h3>
+                    <p class="text-sm text-green-700">
+                        {% set parts = message.split('_') %}
+                        Отправлено: {{ parts[1] }}, Ошибок: {{ parts[3] }}
+                        {% if request.query_params.get('batch_id') %}
+                        <br>ID батча: {{ request.query_params.get('batch_id') }}
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% elif message == 'error' %}
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div class="flex">
+                <i class="fas fa-times-circle text-red-600 mt-1 mr-3"></i>
+                <div>
+                    <h3 class="text-sm font-medium text-red-800">Ошибка отправки</h3>
+                    <p class="text-sm text-red-700">Произошла ошибка при отправке уведомлений</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- WhatsApp Status -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">
+            <i class="fas fa-heartbeat mr-2"></i>Статус WhatsApp сервиса
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="text-center">
+                <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-2
+                    {% if relay_health %}bg-green-100{% else %}bg-red-100{% endif %}">
+                    <i class="fas fa-plug text-2xl {% if relay_health %}text-green-600{% else %}text-red-600{% endif %}"></i>
+                </div>
+                <p class="text-sm font-medium text-gray-600">WhatsApp Relay</p>
+                <p class="{% if relay_health %}text-green-600{% else %}text-red-600{% endif %} font-semibold">
+                    {% if relay_health %}Подключен{% else %}Отключен{% endif %}
+                </p>
+            </div>
+            <div class="text-center">
+                <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-2
+                    {% if test_mode %}bg-yellow-100{% else %}bg-blue-100{% endif %}">
+                    <i class="fas fa-flask text-2xl {% if test_mode %}text-yellow-600{% else %}text-blue-600{% endif %}"></i>
+                </div>
+                <p class="text-sm font-medium text-gray-600">Режим</p>
+                <p class="{% if test_mode %}text-yellow-600{% else %}text-blue-600{% endif %} font-semibold">
+                    {% if test_mode %}Тестовый{% else %}Продакшн{% endif %}
+                </p>
+            </div>
+            <div class="text-center">
+                <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-2
+                    {% if dry_run_enabled %}bg-orange-100{% else %}bg-green-100{% endif %}">
+                    <i class="fas fa-play text-2xl {% if dry_run_enabled %}text-orange-600{% else %}text-green-600{% endif %}"></i>
+                </div>
+                <p class="text-sm font-medium text-gray-600">Отправка</p>
+                <p class="{% if dry_run_enabled %}text-orange-600{% else %}text-green-600{% endif %} font-semibold">
+                    {% if dry_run_enabled %}Dry Run{% else %}Реальная{% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ready Orders -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold text-gray-800">
+                <i class="fas fa-box-open mr-2"></i>Заказы готовые к выдаче
+            </h2>
+            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                {{ ready_orders|length }} заказов
+            </span>
+        </div>
+        
+        {% if ready_orders %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Заказ
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Клиент
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Товар
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            WhatsApp
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Уведомления
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for order in ready_orders %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">{{ order.order_code }}</div>
+                            <div class="text-sm text-gray-500">{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ order.customer_name }}</div>
+                            <div class="text-sm text-gray-500">{{ order.customer_phone }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ order.product_name }}</div>
+                            <div class="text-sm text-gray-500">Количество: {{ order.quantity }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if order.whatsapp_phone %}
+                            <div class="flex items-center">
+                                <i class="fab fa-whatsapp text-green-600 mr-2"></i>
+                                <span class="text-sm text-gray-900">{{ order.whatsapp_phone }}</span>
+                            </div>
+                            {% if order.consent_whatsapp %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                Согласие
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                Нет согласия
+                            </span>
+                            {% endif %}
+                            {% else %}
+                            <span class="text-sm text-gray-500">Не указан</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if order.arrival_notified_at %}
+                            <div class="text-sm text-gray-900">
+                                <i class="fas fa-check-circle text-green-600 mr-1"></i>
+                                Уведомлен
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                {{ order.arrival_notified_at.strftime('%d.%m.%Y %H:%M') }}
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                Попыток: {{ order.arrival_notifications_count }}
+                            </div>
+                            {% else %}
+                            <span class="text-sm text-gray-500">Не уведомлен</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-8">
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-gray-100 mb-4">
+                <i class="fas fa-box-open text-gray-400 text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Нет готовых заказов</h3>
+            <p class="text-gray-500">В данный момент нет заказов готовых к выдаче</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Send Notifications -->
+    {% if ready_orders %}
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">
+            <i class="fas fa-paper-plane mr-2"></i>Отправка уведомлений
+        </h2>
+        
+        <form method="POST" action="/admin/notifications/send-ready">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="template_key" class="block text-sm font-medium text-gray-700 mb-2">
+                        Шаблон сообщения
+                    </label>
+                    <select id="template_key" name="template_key" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        {% for template in templates %}
+                        <option value="{{ template.key }}">{{ template.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Режим отправки
+                    </label>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="radio" name="dry_run" value="true" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Dry Run (тестирование)</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="dry_run" value="false" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Реальная отправка</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6">
+                <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-300">
+                    <i class="fas fa-paper-plane mr-2"></i>Отправить уведомления
+                </button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <a href="/admin/notifications/test" class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition duration-300">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-flask text-blue-600 text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Тестирование</h3>
+                <p class="text-gray-600">Отправка тестовых уведомлений</p>
+            </div>
+        </a>
+        
+        <a href="/admin/notifications/templates" class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition duration-300">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-file-alt text-green-600 text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Шаблоны</h3>
+                <p class="text-gray-600">Управление шаблонами сообщений</p>
+            </div>
+        </a>
+        
+        <a href="/admin/orders" class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition duration-300">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-shopping-cart text-purple-600 text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Заказы</h3>
+                <p class="text-gray-600">Управление заказами</p>
+            </div>
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,1 @@
+# Pydantic схемы Sirius Group V2

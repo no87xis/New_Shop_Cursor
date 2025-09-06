@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Панель администратора - Sirius Group V2{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">
+            <i class="fas fa-tachometer-alt mr-2"></i>Панель администратора
+        </h1>
+        <p class="text-gray-600">
+            Обзор системы и управление
+        </p>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Products -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                    <i class="fas fa-box text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Товары</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ product_stats.total_products or 0 }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 text-green-600">
+                    <i class="fas fa-shopping-cart text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Заказы</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ order_stats.total_orders or 0 }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shop Orders -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                    <i class="fas fa-store text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Заказы магазина</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ shop_order_stats.total_orders or 0 }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Value -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                    <i class="fas fa-ruble-sign text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Общая стоимость</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ "%.0f"|format(product_stats.total_value or 0) }} ₽</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">
+            <i class="fas fa-bolt mr-2"></i>Быстрые действия
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <a href="/admin/products" class="bg-blue-600 text-white p-4 rounded-lg hover:bg-blue-700 transition duration-300 text-center">
+                <i class="fas fa-box text-2xl mb-2"></i>
+                <p class="font-medium">Управление товарами</p>
+            </a>
+            <a href="/admin/orders" class="bg-green-600 text-white p-4 rounded-lg hover:bg-green-700 transition duration-300 text-center">
+                <i class="fas fa-shopping-cart text-2xl mb-2"></i>
+                <p class="font-medium">Управление заказами</p>
+            </a>
+            <a href="/admin/analytics" class="bg-purple-600 text-white p-4 rounded-lg hover:bg-purple-700 transition duration-300 text-center">
+                <i class="fas fa-chart-bar text-2xl mb-2"></i>
+                <p class="font-medium">Аналитика</p>
+            </a>
+            <a href="/shop/" class="bg-orange-600 text-white p-4 rounded-lg hover:bg-orange-700 transition duration-300 text-center">
+                <i class="fas fa-store text-2xl mb-2"></i>
+                <p class="font-medium">Магазин</p>
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Recent Orders -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                <i class="fas fa-clock mr-2"></i>Последние заказы
+            </h2>
+            {% if recent_orders %}
+            <div class="space-y-3">
+                {% for order in recent_orders %}
+                <div class="flex justify-between items-center py-2 border-b border-gray-200">
+                    <div>
+                        <p class="font-medium text-gray-900">Заказ №{{ order.order_code }}</p>
+                        <p class="text-sm text-gray-600">{{ order.customer_name }}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-sm font-medium text-gray-900">{{ "%.2f"|format(order.total_amount) }} ₽</span>
+                        <p class="text-xs text-gray-500">{{ order.status }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="mt-4">
+                <a href="/admin/orders" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                    Посмотреть все заказы →
+                </a>
+            </div>
+            {% else %}
+            <p class="text-gray-500 text-center py-4">Нет заказов</p>
+            {% endif %}
+        </div>
+
+        <!-- Low Stock Products -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                <i class="fas fa-exclamation-triangle mr-2"></i>Товары с низким остатком
+            </h2>
+            {% if low_stock_products %}
+            <div class="space-y-3">
+                {% for product in low_stock_products %}
+                <div class="flex justify-between items-center py-2 border-b border-gray-200">
+                    <div>
+                        <p class="font-medium text-gray-900">{{ product.name }}</p>
+                        <p class="text-sm text-gray-600">Остаток: {{ product.quantity }}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-sm font-medium text-red-600">Низкий остаток</span>
+                        <p class="text-xs text-gray-500">Мин: {{ product.min_stock }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="mt-4">
+                <a href="/admin/products?status=LOW_STOCK" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                    Посмотреть все товары с низким остатком →
+                </a>
+            </div>
+            {% else %}
+            <p class="text-gray-500 text-center py-4">Все товары в наличии</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- System Status -->
+    <div class="mt-8 bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">
+            <i class="fas fa-server mr-2"></i>Статус системы
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <i class="fas fa-database text-green-600 text-xl"></i>
+                </div>
+                <p class="text-sm font-medium text-gray-600">База данных</p>
+                <p class="text-green-600 font-semibold">Работает</p>
+            </div>
+            <div class="text-center">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <i class="fas fa-store text-green-600 text-xl"></i>
+                </div>
+                <p class="text-sm font-medium text-gray-600">Магазин</p>
+                <p class="text-green-600 font-semibold">Активен</p>
+            </div>
+            <div class="text-center">
+                <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <i class="fab fa-whatsapp text-yellow-600 text-xl"></i>
+                </div>
+                <p class="text-sm font-medium text-gray-600">WhatsApp</p>
+                <p class="text-yellow-600 font-semibold">Настройка</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
