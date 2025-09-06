@@ -1,0 +1,337 @@
+{% extends "base.html" %}
+
+{% block title %}Управление товарами - Sirius Group V2{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">
+            <i class="fas fa-box mr-2"></i>Управление товарами
+        </h1>
+        <p class="text-gray-600">
+            Добавление, редактирование и управление товарами
+        </p>
+    </div>
+
+    <!-- Statistics -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-blue-600">{{ stats.total_products or 0 }}</div>
+                <div class="text-sm text-gray-600">Всего товаров</div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-green-600">{{ stats.in_stock or 0 }}</div>
+                <div class="text-sm text-gray-600">В наличии</div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-yellow-600">{{ stats.low_stock or 0 }}</div>
+                <div class="text-sm text-gray-600">Низкий остаток</div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-red-600">{{ stats.out_of_stock or 0 }}</div>
+                <div class="text-sm text-gray-600">Нет в наличии</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="flex flex-wrap gap-4">
+            <div class="flex-1 min-w-64">
+                <input type="text" 
+                       id="search-input" 
+                       placeholder="Поиск товаров..." 
+                       value="{{ search_term or '' }}"
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <select id="status-filter" class="border border-gray-300 rounded-lg px-3 py-2">
+                <option value="">Все статусы</option>
+                <option value="IN_STOCK" {% if current_status == 'IN_STOCK' %}selected{% endif %}>В наличии</option>
+                <option value="LOW_STOCK" {% if current_status == 'LOW_STOCK' %}selected{% endif %}>Низкий остаток</option>
+                <option value="OUT_OF_STOCK" {% if current_status == 'OUT_OF_STOCK' %}selected{% endif %}>Нет в наличии</option>
+                <option value="ON_ORDER" {% if current_status == 'ON_ORDER' %}selected{% endif %}>Под заказ</option>
+            </select>
+            <button onclick="applyFilters()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-300">
+                <i class="fas fa-search mr-2"></i>Поиск
+            </button>
+            <button onclick="showAddProductModal()" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition duration-300">
+                <i class="fas fa-plus mr-2"></i>Добавить товар
+            </button>
+        </div>
+    </div>
+
+    <!-- Products Table -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Товар
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Количество
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Цена
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Статус
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Поставщик
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Действия
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for product in products %}
+                    <tr class="product-row" data-product-id="{{ product.id }}">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">{{ product.name }}</div>
+                                <div class="text-sm text-gray-500">{{ product.description or "Без описания" }}</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ product.quantity }}</div>
+                            <div class="text-xs text-gray-500">Мин: {{ product.min_stock }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ "%.2f"|format(product.sell_price_rub or 0) }} ₽</div>
+                            {% if product.buy_price_eur %}
+                            <div class="text-xs text-gray-500">{{ "%.2f"|format(product.buy_price_eur) }} €</div>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                {% if product.availability_status == 'IN_STOCK' %}bg-green-100 text-green-800
+                                {% elif product.availability_status == 'LOW_STOCK' %}bg-yellow-100 text-yellow-800
+                                {% elif product.availability_status == 'OUT_OF_STOCK' %}bg-red-100 text-red-800
+                                {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                {% if product.availability_status == 'IN_STOCK' %}В наличии
+                                {% elif product.availability_status == 'LOW_STOCK' %}Низкий остаток
+                                {% elif product.availability_status == 'OUT_OF_STOCK' %}Нет в наличии
+                                {% else %}{{ product.availability_status }}{% endif %}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ product.supplier_name or "Не указан" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <button onclick="editProduct({{ product.id }})" class="text-blue-600 hover:text-blue-900">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="updateQuantity({{ product.id }}, {{ product.quantity }})" class="text-green-600 hover:text-green-900">
+                                    <i class="fas fa-warehouse"></i>
+                                </button>
+                                <button onclick="deleteProduct({{ product.id }})" class="text-red-600 hover:text-red-900">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    {% if not products %}
+    <div class="text-center py-12">
+        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-gray-100 mb-4">
+            <i class="fas fa-box text-gray-400 text-2xl"></i>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Товары не найдены</h3>
+        <p class="text-gray-500 mb-6">Добавьте первый товар или измените фильтры поиска</p>
+        <button onclick="showAddProductModal()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-300">
+            <i class="fas fa-plus mr-2"></i>Добавить товар
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Add Product Modal -->
+<div id="add-product-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div class="p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                    <i class="fas fa-plus mr-2"></i>Добавить товар
+                </h3>
+                <form method="POST" action="/admin/products">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
+                                Название товара *
+                            </label>
+                            <input type="text" 
+                                   id="name" 
+                                   name="name" 
+                                   required
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="description" class="block text-sm font-medium text-gray-700 mb-1">
+                                Описание
+                            </label>
+                            <textarea id="description" 
+                                      name="description" 
+                                      rows="3"
+                                      class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="quantity" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Количество
+                                </label>
+                                <input type="number" 
+                                       id="quantity" 
+                                       name="quantity" 
+                                       value="0"
+                                       min="0"
+                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="min_stock" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Мин. остаток
+                                </label>
+                                <input type="number" 
+                                       id="min_stock" 
+                                       name="min_stock" 
+                                       value="0"
+                                       min="0"
+                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="buy_price_eur" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Цена закупки (€)
+                                </label>
+                                <input type="number" 
+                                       id="buy_price_eur" 
+                                       name="buy_price_eur" 
+                                       step="0.01"
+                                       min="0"
+                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="sell_price_rub" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Цена продажи (₽) *
+                                </label>
+                                <input type="number" 
+                                       id="sell_price_rub" 
+                                       name="sell_price_rub" 
+                                       required
+                                       step="0.01"
+                                       min="0"
+                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="supplier_name" class="block text-sm font-medium text-gray-700 mb-1">
+                                Поставщик
+                            </label>
+                            <input type="text" 
+                                   id="supplier_name" 
+                                   name="supplier_name"
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="availability_status" class="block text-sm font-medium text-gray-700 mb-1">
+                                Статус
+                            </label>
+                            <select id="availability_status" 
+                                    name="availability_status"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="IN_STOCK">В наличии</option>
+                                <option value="LOW_STOCK">Низкий остаток</option>
+                                <option value="OUT_OF_STOCK">Нет в наличии</option>
+                                <option value="ON_ORDER">Под заказ</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-3 mt-6">
+                        <button type="button" 
+                                onclick="hideAddProductModal()"
+                                class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition duration-300">
+                            Отмена
+                        </button>
+                        <button type="submit" 
+                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300">
+                            <i class="fas fa-save mr-2"></i>Сохранить
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Показ модального окна добавления товара
+function showAddProductModal() {
+    document.getElementById('add-product-modal').classList.remove('hidden');
+}
+
+// Скрытие модального окна
+function hideAddProductModal() {
+    document.getElementById('add-product-modal').classList.add('hidden');
+}
+
+// Применение фильтров
+function applyFilters() {
+    const search = document.getElementById('search-input').value;
+    const status = document.getElementById('status-filter').value;
+    
+    let url = '/admin/products?';
+    if (search) url += `search=${encodeURIComponent(search)}&`;
+    if (status) url += `status=${status}&`;
+    
+    window.location.href = url;
+}
+
+// Редактирование товара
+function editProduct(productId) {
+    // Здесь должна быть логика редактирования
+    alert(`Редактирование товара ${productId} - функция в разработке`);
+}
+
+// Обновление количества товара
+function updateQuantity(productId, currentQuantity) {
+    const newQuantity = prompt(`Текущее количество: ${currentQuantity}\nВведите новое количество:`, currentQuantity);
+    if (newQuantity !== null && newQuantity !== '') {
+        // Здесь должен быть API вызов для обновления количества
+        alert(`Обновление количества товара ${productId} на ${newQuantity} - функция в разработке`);
+    }
+}
+
+// Удаление товара
+function deleteProduct(productId) {
+    if (confirm('Вы уверены, что хотите удалить этот товар?')) {
+        // Здесь должен быть API вызов для удаления товара
+        alert(`Удаление товара ${productId} - функция в разработке`);
+    }
+}
+
+// Поиск при нажатии Enter
+document.getElementById('search-input').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        applyFilters();
+    }
+});
+</script>
+{% endblock %}

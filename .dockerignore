@@ -1,0 +1,78 @@
+# Игнорируемые файлы для Docker
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Виртуальные окружения
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Логи
+logs/
+*.log
+
+# База данных
+*.db
+*.sqlite
+
+# Временные файлы
+.tmp/
+temp/
+
+# Git
+.git/
+.gitignore
+
+# Документация
+docs/
+*.md
+
+# Тесты
+tests/
+.pytest_cache/
+
+# Coverage
+.coverage
+htmlcov/
+
+# Backup файлы
+backups/
+*.bak
+
+# Environment файлы
+.env
+.env.local
+.env.production
+
+# Node modules (для WhatsApp Relay)
+node_modules/
+npm-debug.log*
+
+# Docker файлы
+Dockerfile*
+docker-compose*.yml
+.dockerignore

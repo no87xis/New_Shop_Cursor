@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}Каталог товаров - Sirius Group V2{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">
+            <i class="fas fa-shopping-bag mr-2"></i>Каталог товаров
+        </h1>
+        <p class="text-gray-600">
+            Выберите нужные товары и добавьте их в корзину
+        </p>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white p-4 rounded-lg shadow-md mb-8">
+        <div class="flex flex-wrap gap-4">
+            <select id="status-filter" class="border border-gray-300 rounded-lg px-3 py-2">
+                <option value="">Все статусы</option>
+                <option value="IN_STOCK">В наличии</option>
+                <option value="ON_ORDER">Под заказ</option>
+                <option value="IN_TRANSIT">В пути</option>
+            </select>
+            <input type="text" id="search-input" placeholder="Поиск товаров..." class="border border-gray-300 rounded-lg px-3 py-2 flex-1 min-w-64">
+        </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="products-grid">
+        {% for product in products %}
+        <div class="bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300 product-card" 
+             data-name="{{ product.name.lower() }}" 
+             data-status="{{ product.availability_status }}">
+            <div class="p-6">
+                <div class="mb-4">
+                    <div class="w-full h-32 bg-gray-200 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-image text-gray-400 text-3xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">{{ product.name }}</h3>
+                    <p class="text-gray-600 text-sm mb-4">
+                        {{ product.description or "Описание отсутствует" }}
+                    </p>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-2xl font-bold text-blue-600">
+                            {{ "%.2f"|format(product.sell_price_rub or 0) }} ₽
+                        </span>
+                        <span class="text-sm px-2 py-1 rounded-full
+                            {% if product.availability_status == 'IN_STOCK' %}bg-green-100 text-green-800
+                            {% elif product.availability_status == 'ON_ORDER' %}bg-yellow-100 text-yellow-800
+                            {% else %}bg-blue-100 text-blue-800{% endif %}">
+                            {% if product.availability_status == 'IN_STOCK' %}В наличии
+                            {% elif product.availability_status == 'ON_ORDER' %}Под заказ
+                            {% else %}В пути{% endif %}
+                        </span>
+                    </div>
+                    <div class="text-sm text-gray-500">
+                        В наличии: {{ product.quantity }} шт.
+                    </div>
+                </div>
+                
+                <div class="space-y-2">
+                    <a href="/shop/product/{{ product.id }}" class="w-full bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition duration-300 text-center block">
+                        <i class="fas fa-eye mr-2"></i>Подробнее
+                    </a>
+                    {% if product.availability_status == 'IN_STOCK' and product.quantity > 0 %}
+                    <button onclick="addToCart({{ product.id }})" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">
+                        <i class="fas fa-cart-plus mr-2"></i>В корзину
+                    </button>
+                    {% else %}
+                    <button disabled class="w-full bg-gray-300 text-gray-500 py-2 px-4 rounded-lg cursor-not-allowed">
+                        <i class="fas fa-ban mr-2"></i>Недоступно
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="text-center py-12 hidden">
+        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-gray-100 mb-4">
+            <i class="fas fa-search text-gray-400 text-2xl"></i>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Товары не найдены</h3>
+        <p class="text-gray-500">Попробуйте изменить фильтры или поисковый запрос</p>
+    </div>
+</div>
+
+<script>
+// Фильтрация и поиск товаров
+document.addEventListener('DOMContentLoaded', function() {
+    const statusFilter = document.getElementById('status-filter');
+    const searchInput = document.getElementById('search-input');
+    const productsGrid = document.getElementById('products-grid');
+    const emptyState = document.getElementById('empty-state');
+    const productCards = document.querySelectorAll('.product-card');
+
+    function filterProducts() {
+        const statusValue = statusFilter.value;
+        const searchValue = searchInput.value.toLowerCase();
+        let visibleCount = 0;
+
+        productCards.forEach(card => {
+            const name = card.dataset.name;
+            const status = card.dataset.status;
+            
+            const matchesStatus = !statusValue || status === statusValue;
+            const matchesSearch = !searchValue || name.includes(searchValue);
+            
+            if (matchesStatus && matchesSearch) {
+                card.style.display = 'block';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        if (visibleCount === 0) {
+            productsGrid.style.display = 'none';
+            emptyState.classList.remove('hidden');
+        } else {
+            productsGrid.style.display = 'grid';
+            emptyState.classList.add('hidden');
+        }
+    }
+
+    statusFilter.addEventListener('change', filterProducts);
+    searchInput.addEventListener('input', filterProducts);
+});
+
+// Добавление товара в корзину
+async function addToCart(productId) {
+    try {
+        const response = await fetch('/api/shop/cart/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                product_id: productId,
+                quantity: 1
+            })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            // Показываем уведомление
+            showNotification('Товар добавлен в корзину!', 'success');
+            // Обновляем счетчик корзины
+            updateCartCount();
+        } else {
+            showNotification(data.message || 'Ошибка добавления товара', 'error');
+        }
+    } catch (error) {
+        console.error('Error adding to cart:', error);
+        showNotification('Ошибка добавления товара', 'error');
+    }
+}
+
+// Показ уведомлений
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+        type === 'success' ? 'bg-green-500 text-white' :
+        type === 'error' ? 'bg-red-500 text-white' :
+        'bg-blue-500 text-white'
+    }`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+</script>
+{% endblock %}
