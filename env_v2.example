@@ -1,0 +1,103 @@
+# Sirius Group V2 - Переменные окружения с WhatsApp уведомлениями
+# Скопируйте этот файл в .env и настройте под свои нужды
+
+# Database
+DATABASE_URL=sqlite:///./sirius.db
+
+# Security
+SECRET_KEY=your-secret-key-32-characters-long-2024
+SESSION_MAX_AGE=86400
+
+# External Services
+TELEGRAM_BOT_TOKEN=your-bot-token
+TELEGRAM_CHAT_ID=your-chat-id
+
+# Email Settings
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
+SMTP_USE_TLS=true
+
+# Application Settings
+ENVIRONMENT=development
+DEBUG=true
+LOG_LEVEL=INFO
+
+# Cache
+REDIS_URL=redis://localhost:6379/0
+
+# File Upload
+MAX_FILE_SIZE=10485760
+UPLOAD_DIR=uploads
+
+# Rate Limiting
+RATE_LIMIT_ENABLED=true
+RATE_LIMIT_REQUESTS=100
+RATE_LIMIT_WINDOW=60
+
+# Monitoring
+PROMETHEUS_ENABLED=true
+HEALTH_CHECK_INTERVAL=30
+
+# Development
+RELOAD=true
+HOST=127.0.0.1
+PORT=8000
+
+# WhatsApp Relay - НОВОЕ
+WHATSAPP_RELAY_URL=http://localhost:3000
+WHATSAPP_RELAY_TOKEN=your-wa-relay-token
+PICKUP_ADDRESS=Наш склад, ул. Примерная, 123
+PICKUP_HOURS=Пн-Пт: 10:00-19:00, Сб: 10:00-16:00
+DEFAULT_COUNTRY_CODE=BY
+
+# WhatsApp Settings - НОВОЕ
+WHATSAPP_SEND_DELAY_MIN_MS=900
+WHATSAPP_SEND_DELAY_MAX_MS=1700
+WHATSAPP_RATE_LIMIT_PER_MIN=45
+WHATSAPP_SESSION_PATH=./.wwebjs_auth
+
+# Notification Templates - НОВОЕ
+NOTIFICATION_TEMPLATE_ARRIVED=arrived_v1
+NOTIFICATION_TEMPLATE_READY=ready_v1
+NOTIFICATION_TEMPLATE_SHIPPED=shipped_v1
+
+# Phone Validation - НОВОЕ
+PHONE_VALIDATION_ENABLED=true
+PHONE_DEFAULT_COUNTRY=BY
+PHONE_ALLOWED_COUNTRIES=BY,RU,UA
+
+# Message Logging - НОВОЕ
+MESSAGE_LOG_ENABLED=true
+MESSAGE_LOG_RETENTION_DAYS=30
+MESSAGE_LOG_CLEANUP_INTERVAL=24
+
+# Batch Processing - НОВОЕ
+BATCH_SIZE_MAX=50
+BATCH_DELAY_MS=1000
+BATCH_RETRY_ATTEMPTS=3
+BATCH_RETRY_DELAY_MS=5000
+
+# Security - НОВОЕ
+WHATSAPP_AUTH_REQUIRED=true
+WHATSAPP_IP_WHITELIST=
+WHATSAPP_RATE_LIMIT_PER_IP=10
+WHATSAPP_RATE_LIMIT_WINDOW=60
+
+# Monitoring - НОВОЕ
+WHATSAPP_MONITORING_ENABLED=true
+WHATSAPP_METRICS_ENABLED=true
+WHATSAPP_ALERTS_ENABLED=true
+WHATSAPP_ALERT_EMAIL=admin@example.com
+
+# Testing - НОВОЕ
+WHATSAPP_TEST_MODE=false
+WHATSAPP_TEST_PHONE=+375291234567
+WHATSAPP_DRY_RUN_ENABLED=true
+
+# Development Tools - НОВОЕ
+WHATSAPP_DEBUG_ENABLED=false
+WHATSAPP_VERBOSE_LOGGING=false
+WHATSAPP_SAVE_MESSAGES=true
+WHATSAPP_SAVE_QR_CODES=true

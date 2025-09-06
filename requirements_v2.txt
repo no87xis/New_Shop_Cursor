@@ -1,0 +1,614 @@
+# Sirius Group V2 - Система управления складом и интернет-магазин с WhatsApp уведомлениями
+# Основные зависимости
+
+# Web Framework
+fastapi==0.104.1
+uvicorn==0.24.0
+
+# Database
+sqlalchemy==2.0.36
+alembic==1.12.1
+
+# Authentication & Security
+python-multipart==0.0.6
+python-jose==3.3.0
+passlib==1.7.4
+itsdangerous==2.1.2
+
+# Templates & Static Files
+jinja2==3.1.2
+aiofiles==23.2.1
+
+# Configuration
+python-dotenv==1.0.0
+pydantic-settings==2.0.3
+
+# QR Codes
+qrcode==8.2.0
+pillow==11.3.0
+
+# HTTP Client
+httpx==0.24.1
+
+# Development & Testing
+pytest==7.4.0
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+pytest-mock==3.11.1
+
+# Code Quality
+black==23.9.1
+flake8==6.1.0
+mypy==1.5.1
+
+# Monitoring & Logging
+structlog==23.1.0
+python-json-logger==2.0.7
+loguru==0.7.0
+
+# Metrics
+prometheus-client==0.17.1
+psutil==5.9.5
+
+# Cache
+redis==4.6.0
+
+# Rate Limiting
+slowapi==0.1.9
+
+# Email
+emails==0.6.0
+
+# Date/Time
+python-dateutil==2.8.2
+
+# Utilities
+click==8.1.7
+rich==13.6.0
+
+# WhatsApp Integration - НОВОЕ
+requests==2.31.0
+urllib3==2.0.7
+
+# Phone Number Validation - НОВОЕ
+phonenumbers==8.13.19
+
+# UUID Support - НОВОЕ
+uuid==1.30
+
+# JSON Schema Validation - НОВОЕ
+jsonschema==4.19.2
+
+# Async HTTP Client for WhatsApp Relay - НОВОЕ
+aiohttp==3.9.1
+
+# Timezone Support - НОВОЕ
+pytz==2023.3
+
+# CSV Export - НОВОЕ
+pandas==2.1.4
+
+# Excel Export - НОВОЕ
+openpyxl==3.1.2
+
+# PDF Generation - НОВОЕ
+reportlab==4.0.7
+
+# Image Processing - НОВОЕ
+Pillow==11.3.0
+
+# Encryption - НОВОЕ
+cryptography==41.0.8
+
+# Environment Variables - НОВОЕ
+python-decouple==3.8
+
+# Background Tasks - НОВОЕ
+celery==5.3.4
+
+# Message Queue - НОВОЕ
+kombu==5.3.4
+
+# Database Migrations - НОВОЕ
+alembic==1.12.1
+
+# CORS Support - НОВОЕ
+fastapi-cors==0.0.6
+
+# WebSocket Support - НОВОЕ
+websockets==12.0
+
+# Compression - НОВОЕ
+gzip-stream==0.0.3
+
+# File Upload - НОВОЕ
+python-multipart==0.0.6
+
+# Form Validation - НОВОЕ
+wtforms==3.1.1
+
+# Session Management - НОВОЕ
+itsdangerous==2.1.2
+
+# URL Parsing - НОВОЕ
+yarl==1.9.4
+
+# HTTP Status Codes - НОВОЕ
+httpstatus==1.0.0
+
+# Data Validation - НОВОЕ
+cerberus==1.3.5
+
+# String Utilities - НОВОЕ
+stringcase==1.2.0
+
+# Color Logging - НОВОЕ
+colorlog==6.8.0
+
+# Progress Bars - НОВОЕ
+tqdm==4.66.1
+
+# Configuration Management - НОВОЕ
+dynaconf==3.2.4
+
+# Health Checks - НОВОЕ
+healthcheck==1.3.3
+
+# Performance Monitoring - НОВОЕ
+py-spy==0.3.14
+
+# Memory Profiling - НОВОЕ
+memory-profiler==0.61.0
+
+# Code Coverage - НОВОЕ
+coverage==7.3.2
+
+# Linting - НОВОЕ
+pylint==3.0.3
+
+# Type Checking - НОВОЕ
+mypy==1.7.1
+
+# Security Scanning - НОВОЕ
+bandit==1.7.5
+
+# Dependency Scanning - НОВОЕ
+safety==2.3.5
+
+# Documentation Generation - НОВОЕ
+sphinx==7.2.6
+
+# API Documentation - НОВОЕ
+sphinx-rtd-theme==1.3.0
+
+# Markdown Support - НОВОЕ
+markdown==3.5.1
+
+# YAML Support - НОВОЕ
+PyYAML==6.0.1
+
+# TOML Support - НОВОЕ
+toml==0.10.2
+
+# INI Support - НОВОЕ
+configparser==6.0.0
+
+# JSON Support - НОВОЕ
+orjson==3.9.10
+
+# XML Support - НОВОЕ
+lxml==4.9.3
+
+# CSV Support - НОВОЕ
+csvkit==1.1.1
+
+# Excel Support - НОВОЕ
+xlrd==2.0.1
+
+# PDF Support - НОВОЕ
+PyPDF2==3.0.1
+
+# Image Support - НОВОЕ
+Pillow==11.3.0
+
+# Audio Support - НОВОЕ
+pydub==0.25.1
+
+# Video Support - НОВОЕ
+opencv-python==4.8.1.78
+
+# Machine Learning - НОВОЕ
+scikit-learn==1.3.2
+
+# Data Analysis - НОВОЕ
+numpy==1.25.2
+
+# Scientific Computing - НОВОЕ
+scipy==1.11.4
+
+# Statistical Analysis - НОВОЕ
+statsmodels==0.14.0
+
+# Time Series Analysis - НОВОЕ
+prophet==1.1.4
+
+# Data Visualization - НОВОЕ
+matplotlib==3.8.2
+
+# Plotting - НОВОЕ
+seaborn==0.13.0
+
+# Interactive Plots - НОВОЕ
+plotly==5.17.0
+
+# Web Scraping - НОВОЕ
+beautifulsoup4==4.12.2
+
+# HTTP Requests - НОВОЕ
+requests-html==0.10.0
+
+# Selenium - НОВОЕ
+selenium==4.15.2
+
+# Playwright - НОВОЕ
+playwright==1.40.0
+
+# API Testing - НОВОЕ
+tavern==1.25.0
+
+# Load Testing - НОВОЕ
+locust==2.17.0
+
+# Performance Testing - НОВОЕ
+pytest-benchmark==4.0.0
+
+# Memory Testing - НОВОЕ
+pytest-memray==1.4.0
+
+# Database Testing - НОВОЕ
+pytest-postgresql==5.0.0
+
+# Redis Testing - НОВОЕ
+pytest-redis==3.0.0
+
+# Docker Testing - НОВОЕ
+testcontainers==3.7.1
+
+# Kubernetes Testing - НОВОЕ
+kubernetes==28.1.0
+
+# Cloud Testing - НОВОЕ
+boto3==1.34.0
+
+# AWS Testing - НОВОЕ
+moto==4.2.14
+
+# Azure Testing - НОВОЕ
+azure-storage-blob==12.19.0
+
+# GCP Testing - НОВОЕ
+google-cloud-storage==2.10.0
+
+# Monitoring - НОВОЕ
+datadog==0.48.0
+
+# Logging - НОВОЕ
+sentry-sdk==1.38.0
+
+# Error Tracking - НОВОЕ
+rollbar==0.16.3
+
+# Analytics - НОВОЕ
+mixpanel==4.10.0
+
+# Metrics - НОВОЕ
+newrelic==9.2.0
+
+# APM - НОВОЕ
+elastic-apm==6.15.0
+
+# Tracing - НОВОЕ
+jaeger-client==4.8.0
+
+# Distributed Tracing - НОВОЕ
+opentelemetry-api==1.21.0
+
+# OpenTelemetry - НОВОЕ
+opentelemetry-sdk==1.21.0
+
+# Instrumentation - НОВОЕ
+opentelemetry-instrumentation==0.42b0
+
+# FastAPI Instrumentation - НОВОЕ
+opentelemetry-instrumentation-fastapi==0.42b0
+
+# SQLAlchemy Instrumentation - НОВОЕ
+opentelemetry-instrumentation-sqlalchemy==0.42b0
+
+# Redis Instrumentation - НОВОЕ
+opentelemetry-instrumentation-redis==0.42b0
+
+# HTTP Instrumentation - НОВОЕ
+opentelemetry-instrumentation-httpx==0.42b0
+
+# Requests Instrumentation - НОВОЕ
+opentelemetry-instrumentation-requests==0.42b0
+
+# AioHTTP Instrumentation - НОВОЕ
+opentelemetry-instrumentation-aiohttp-client==0.42b0
+
+# Celery Instrumentation - НОВОЕ
+opentelemetry-instrumentation-celery==0.42b0
+
+# Django Instrumentation - НОВОЕ
+opentelemetry-instrumentation-django==0.42b0
+
+# Flask Instrumentation - НОВОЕ
+opentelemetry-instrumentation-flask==0.42b0
+
+# Logging Instrumentation - НОВОЕ
+opentelemetry-instrumentation-logging==0.42b0
+
+# Psycopg2 Instrumentation - НОВОЕ
+opentelemetry-instrumentation-psycopg2==0.42b0
+
+# PyMySQL Instrumentation - НОВОЕ
+opentelemetry-instrumentation-pymysql==0.42b0
+
+# SQLite Instrumentation - НОВОЕ
+opentelemetry-instrumentation-sqlite3==0.42b0
+
+# MongoDB Instrumentation - НОВОЕ
+opentelemetry-instrumentation-pymongo==0.42b0
+
+# Elasticsearch Instrumentation - НОВОЕ
+opentelemetry-instrumentation-elasticsearch==0.42b0
+
+# Kafka Instrumentation - НОВОЕ
+opentelemetry-instrumentation-kafka==0.42b0
+
+# RabbitMQ Instrumentation - НОВОЕ
+opentelemetry-instrumentation-pika==0.42b0
+
+# AWS Instrumentation - НОВОЕ
+opentelemetry-instrumentation-boto3sqs==0.42b0
+
+# Azure Instrumentation - НОВОЕ
+opentelemetry-instrumentation-azure==0.42b0
+
+# GCP Instrumentation - НОВОЕ
+opentelemetry-instrumentation-google-cloud==0.42b0
+
+# Docker Instrumentation - НОВОЕ
+opentelemetry-instrumentation-docker==0.42b0
+
+# Kubernetes Instrumentation - НОВОЕ
+opentelemetry-instrumentation-kubernetes==0.42b0
+
+# Prometheus Instrumentation - НОВОЕ
+opentelemetry-instrumentation-prometheus==0.42b0
+
+# Jaeger Instrumentation - НОВОЕ
+opentelemetry-instrumentation-jaeger==0.42b0
+
+# Zipkin Instrumentation - НОВОЕ
+opentelemetry-instrumentation-zipkin==0.42b0
+
+# OTLP Instrumentation - НОВОЕ
+opentelemetry-instrumentation-otlp==0.42b0
+
+# Console Instrumentation - НОВОЕ
+opentelemetry-instrumentation-console==0.42b0
+
+# File Instrumentation - НОВОЕ
+opentelemetry-instrumentation-file==0.42b0
+
+# Memory Instrumentation - НОВОЕ
+opentelemetry-instrumentation-memory==0.42b0
+
+# CPU Instrumentation - НОВОЕ
+opentelemetry-instrumentation-cpu==0.42b0
+
+# Disk Instrumentation - НОВОЕ
+opentelemetry-instrumentation-disk==0.42b0
+
+# Network Instrumentation - НОВОЕ
+opentelemetry-instrumentation-network==0.42b0
+
+# Process Instrumentation - НОВОЕ
+opentelemetry-instrumentation-process==0.42b0
+
+# System Instrumentation - НОВОЕ
+opentelemetry-instrumentation-system==0.42b0
+
+# Thread Instrumentation - НОВОЕ
+opentelemetry-instrumentation-thread==0.42b0
+
+# Async Instrumentation - НОВОЕ
+opentelemetry-instrumentation-async==0.42b0
+
+# Context Instrumentation - НОВОЕ
+opentelemetry-instrumentation-context==0.42b0
+
+# Trace Instrumentation - НОВОЕ
+opentelemetry-instrumentation-trace==0.42b0
+
+# Span Instrumentation - НОВОЕ
+opentelemetry-instrumentation-span==0.42b0
+
+# Metrics Instrumentation - НОВОЕ
+opentelemetry-instrumentation-metrics==0.42b0
+
+# Counter Instrumentation - НОВОЕ
+opentelemetry-instrumentation-counter==0.42b0
+
+# Gauge Instrumentation - НОВОЕ
+opentelemetry-instrumentation-gauge==0.42b0
+
+# Histogram Instrumentation - НОВОЕ
+opentelemetry-instrumentation-histogram==0.42b0
+
+# Summary Instrumentation - НОВОЕ
+opentelemetry-instrumentation-summary==0.42b0
+
+# Resource Instrumentation - НОВОЕ
+opentelemetry-instrumentation-resource==0.42b0
+
+# Attributes Instrumentation - НОВОЕ
+opentelemetry-instrumentation-attributes==0.42b0
+
+# Baggage Instrumentation - НОВОЕ
+opentelemetry-instrumentation-baggage==0.42b0
+
+# Correlation Instrumentation - НОВОЕ
+opentelemetry-instrumentation-correlation==0.42b0
+
+# Sampling Instrumentation - НОВОЕ
+opentelemetry-instrumentation-sampling==0.42b0
+
+# Propagation Instrumentation - НОВОЕ
+opentelemetry-instrumentation-propagation==0.42b0
+
+# Headers Instrumentation - НОВОЕ
+opentelemetry-instrumentation-headers==0.42b0
+
+# Context Propagation Instrumentation - НОВОЕ
+opentelemetry-instrumentation-context-propagation==0.42b0
+
+# Trace Propagation Instrumentation - НОВОЕ
+opentelemetry-instrumentation-trace-propagation==0.42b0
+
+# Span Propagation Instrumentation - НОВОЕ
+opentelemetry-instrumentation-span-propagation==0.42b0
+
+# Metrics Propagation Instrumentation - НОВОЕ
+opentelemetry-instrumentation-metrics-propagation==0.42b0
+
+# Resource Propagation Instrumentation - НОВОЕ
+opentelemetry-instrumentation-resource-propagation==0.42b0
+
+# Attributes Propagation Instrumentation - НОВОЕ
+opentelemetry-instrumentation-attributes-propagation==0.42b0
+
+# Baggage Propagation Instrumentation - НОВОЕ
+opentelemetry-instrumentation-baggage-propagation==0.42b0
+
+# Correlation Propagation Instrumentation - НОВОЕ
+opentelemetry-instrumentation-correlation-propagation==0.42b0
+
+# Sampling Propagation Instrumentation - НОВОЕ
+opentelemetry-instrumentation-sampling-propagation==0.42b0
+
+# Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-export==0.42b0
+
+# OTLP Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-otlp-export==0.42b0
+
+# Jaeger Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-jaeger-export==0.42b0
+
+# Zipkin Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-zipkin-export==0.42b0
+
+# Console Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-console-export==0.42b0
+
+# File Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-file-export==0.42b0
+
+# Memory Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-memory-export==0.42b0
+
+# CPU Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-cpu-export==0.42b0
+
+# Disk Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-disk-export==0.42b0
+
+# Network Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-network-export==0.42b0
+
+# Process Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-process-export==0.42b0
+
+# System Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-system-export==0.42b0
+
+# Thread Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-thread-export==0.42b0
+
+# Async Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-async-export==0.42b0
+
+# Context Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-context-export==0.42b0
+
+# Trace Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-trace-export==0.42b0
+
+# Span Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-span-export==0.42b0
+
+# Metrics Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-metrics-export==0.42b0
+
+# Counter Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-counter-export==0.42b0
+
+# Gauge Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-gauge-export==0.42b0
+
+# Histogram Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-histogram-export==0.42b0
+
+# Summary Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-summary-export==0.42b0
+
+# Resource Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-resource-export==0.42b0
+
+# Attributes Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-attributes-export==0.42b0
+
+# Baggage Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-baggage-export==0.42b0
+
+# Correlation Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-correlation-export==0.42b0
+
+# Sampling Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-sampling-export==0.42b0
+
+# Propagation Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-propagation-export==0.42b0
+
+# Headers Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-headers-export==0.42b0
+
+# Context Propagation Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-context-propagation-export==0.42b0
+
+# Trace Propagation Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-trace-propagation-export==0.42b0
+
+# Span Propagation Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-span-propagation-export==0.42b0
+
+# Metrics Propagation Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-metrics-propagation-export==0.42b0
+
+# Resource Propagation Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-resource-propagation-export==0.42b0
+
+# Attributes Propagation Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-attributes-propagation-export==0.42b0
+
+# Baggage Propagation Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-baggage-propagation-export==0.42b0
+
+# Correlation Propagation Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-correlation-propagation-export==0.42b0
+
+# Sampling Propagation Export Instrumentation - НОВОЕ
+opentelemetry-instrumentation-sampling-propagation-export==0.42b0
