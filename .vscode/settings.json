@@ -1,0 +1,14 @@
+{
+  "sqltools.connections": [
+    {
+      "name": "maps-postgres",
+      "driver": "PostgreSQL",
+      "server": "127.0.0.1",
+      "port": 5432,
+      "database": "appdb",
+      "username": "appuser",
+      "password": "bd4a73a37cab06a21c929b8a46c6f78a894d556d448c9dbd",
+      "previewLimit": 50
+    }
+  ]
+}
