@@ -1,1 +1,1 @@
-# Sirius Group V2 - Система управления складом и интернет-магазин с WhatsApp уведомлениями
+# Sirius Shop Application

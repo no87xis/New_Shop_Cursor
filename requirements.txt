@@ -1,52 +1,25 @@
-# Sirius Group V2 - Основные зависимости
-
-# Web Framework
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 python-multipart==0.0.6
-
-# Database
 sqlalchemy==2.0.36
 alembic==1.12.1
-
-# Authentication & Security
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 itsdangerous==2.1.2
-
-# Templates & Static Files
 jinja2==3.1.2
 aiofiles==23.2.1
-
-# Configuration
 python-dotenv==1.0.0
 pydantic-settings==2.0.3
-
-# QR Codes
 qrcode[pil]==8.2.0
 pillow==11.3.0
-
-# HTTP Client
 httpx==0.24.1
 requests==2.31.0
-
-# Development & Testing
 pytest==7.4.0
 pytest-asyncio==0.21.1
-
-# Monitoring & Logging
 structlog==23.1.0
 psutil==5.9.5
-
-# Cache
 redis==4.6.0
-
-# Date/Time
 python-dateutil==2.8.2
-
-# Phone Number Validation
 phonenumbers==8.13.19
-
-# Utilities
 click==8.1.7
 rich==13.6.0

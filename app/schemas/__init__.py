@@ -1,1 +1,1 @@
-# Pydantic схемы Sirius Group V2
+# Schemas package

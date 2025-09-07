@@ -1,1 +1,1 @@
-# Модели данных Sirius Group V2
+# Models package

@@ -1,26 +1,15 @@
-"""
-API для магазина
-"""
-from fastapi import APIRouter, Depends, HTTPException, Form, Request
+from fastapi import APIRouter, Depends, Request, HTTPException
 from sqlalchemy.orm import Session
+from app.db import get_db
+from app.models.shop_cart import ShopCart
+from app.services.product_service import ProductService
 from typing import List
-import logging
 import json
 
-from app.db import get_db
-from app.models.product import Product
-from app.models.order import ShopCart
-from app.schemas.order import ShopCartSummary, ShopCartItem
-from app.constants.delivery import calculate_delivery_cost, DeliveryOption
-
-logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/shop", tags=["shop"])
-
+router = APIRouter()
 
 def get_session_id(request: Request) -> str:
-    """
-    Получение ID сессии из запроса
-    """
+    """Получить или создать session_id"""
     session_id = request.session.get("session_id")
     if not session_id:
         import uuid
@@ -28,50 +17,24 @@ def get_session_id(request: Request) -> str:
         request.session["session_id"] = session_id
     return session_id
 
-
-@router.get("/cart/count")
-async def get_cart_count(request: Request, db: Session = Depends(get_db)):
-    """
-    Получение количества товаров в корзине
-    """
+@router.post("/api/cart/add")
+async def add_to_cart(request: Request, db: Session = Depends(get_db)):
     try:
-        session_id = get_session_id(request)
-        count = db.query(ShopCart).filter(ShopCart.session_id == session_id).count()
-        return {"count": count}
-    except Exception as e:
-        logger.error(f"Error getting cart count: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка получения количества товаров в корзине")
-
-
-@router.post("/cart/add")
-async def add_to_cart(
-    request: Request,
-    db: Session = Depends(get_db)
-):
-    """
-    Добавление товара в корзину
-    """
-    try:
-        # Получаем данные из JSON
         body = await request.json()
         product_id = body.get("product_id")
         quantity = body.get("quantity", 1)
         
         if not product_id:
-            raise HTTPException(status_code=400, detail="Не указан ID товара")
+            raise HTTPException(status_code=400, detail="product_id is required")
         
-        # Проверяем существование товара
-        product = db.query(Product).filter(Product.id == product_id).first()
+        product_service = ProductService(db)
+        product = product_service.get_by_id(product_id)
         if not product:
-            raise HTTPException(status_code=404, detail="Товар не найден")
+            raise HTTPException(status_code=404, detail="Product not found")
         
-        # Проверяем доступность товара
+        # Проверяем статус товара
         if product.availability_status not in ["IN_STOCK", "ON_ORDER"]:
-            raise HTTPException(status_code=400, detail="Товар недоступен для заказа")
-        
-        # Для товаров в наличии проверяем количество
-        if product.availability_status == "IN_STOCK" and product.quantity < quantity:
-            raise HTTPException(status_code=400, detail="Недостаточно товара на складе")
+            raise HTTPException(status_code=400, detail="Product not available")
         
         session_id = get_session_id(request)
         
@@ -82,264 +45,112 @@ async def add_to_cart(
         ).first()
         
         if existing_item:
-            # Обновляем количество
             existing_item.quantity += quantity
         else:
-            # Создаем новый элемент корзины
             cart_item = ShopCart(
                 session_id=session_id,
                 product_id=product_id,
-                quantity=quantity
+                quantity=quantity,
+                price=product.sell_price_rub
             )
             db.add(cart_item)
         
         db.commit()
-        
-        return {"success": True, "message": "Товар добавлен в корзину"}
-        
-    except HTTPException:
-        raise
+        return {"status": "success", "message": "Товар добавлен в корзину"}
+    
     except Exception as e:
-        logger.error(f"Error adding to cart: {e}")
-        db.rollback()
-        raise HTTPException(status_code=500, detail="Ошибка добавления товара в корзину")
+        raise HTTPException(status_code=500, detail=str(e))
 
-
-@router.post("/cart/add-form")
-async def add_to_cart_form(
-    product_id: int = Form(...),
-    quantity: int = Form(...),
-    request: Request = None,
-    db: Session = Depends(get_db)
-):
-    """
-    Добавление товара в корзину через form data
-    """
-    # Создаем JSON данные для передачи в add_to_cart
-    class MockRequest:
-        def __init__(self, session_id):
-            self.session = {"session_id": session_id}
-    
-    mock_request = MockRequest(get_session_id(request))
-    
-    # Проверяем существование товара
-    product = db.query(Product).filter(Product.id == product_id).first()
-    if not product:
-        raise HTTPException(status_code=404, detail="Товар не найден")
-    
-    # Проверяем доступность товара
-    if product.availability_status not in ["IN_STOCK", "ON_ORDER"]:
-        raise HTTPException(status_code=400, detail="Товар недоступен для заказа")
-    
-    # Для товаров в наличии проверяем количество
-    if product.availability_status == "IN_STOCK" and product.quantity < quantity:
-        raise HTTPException(status_code=400, detail="Недостаточно товара на складе")
-    
+@router.get("/api/cart/count")
+async def get_cart_count(request: Request, db: Session = Depends(get_db)):
     session_id = get_session_id(request)
-    
-    # Проверяем, есть ли уже такой товар в корзине
-    existing_item = db.query(ShopCart).filter(
-        ShopCart.session_id == session_id,
-        ShopCart.product_id == product_id
-    ).first()
-    
-    if existing_item:
-        # Обновляем количество
-        existing_item.quantity += quantity
-    else:
-        # Создаем новый элемент корзины
-        cart_item = ShopCart(
-            session_id=session_id,
-            product_id=product_id,
-            quantity=quantity
-        )
-        db.add(cart_item)
-    
-    db.commit()
-    
-    return {"success": True, "message": "Товар добавлен в корзину"}
+    count = db.query(ShopCart).filter(ShopCart.session_id == session_id).count()
+    return {"count": count}
 
+@router.get("/api/cart")
+async def get_cart(request: Request, db: Session = Depends(get_db)):
+    session_id = get_session_id(request)
+    cart_items = db.query(ShopCart).filter(ShopCart.session_id == session_id).all()
+    
+    product_service = ProductService(db)
+    cart_data = []
+    total = 0
+    
+    for item in cart_items:
+        product = product_service.get_by_id(item.product_id)
+        if product:
+            item_total = item.quantity * item.price
+            total += item_total
+            cart_data.append({
+                "id": item.id,
+                "product_id": product.id,
+                "name": product.name,
+                "quantity": item.quantity,
+                "price": item.price,
+                "total": item_total,
+                "photo_path": product.photo_path
+            })
+    
+    return {"items": cart_data, "total": total}
 
-@router.put("/cart/update/{product_id}")
-async def update_cart_item(
-    product_id: int,
-    quantity: int,
-    request: Request,
-    db: Session = Depends(get_db)
-):
-    """
-    Обновление количества товара в корзине
-    """
+@router.post("/api/cart/update")
+async def update_cart_item(request: Request, db: Session = Depends(get_db)):
     try:
-        session_id = get_session_id(request)
+        body = await request.json()
+        item_id = body.get("item_id")
+        quantity = body.get("quantity")
         
+        if not item_id or quantity is None:
+            raise HTTPException(status_code=400, detail="item_id and quantity are required")
+        
+        session_id = get_session_id(request)
         cart_item = db.query(ShopCart).filter(
-            ShopCart.session_id == session_id,
-            ShopCart.product_id == product_id
+            ShopCart.id == item_id,
+            ShopCart.session_id == session_id
         ).first()
         
         if not cart_item:
-            raise HTTPException(status_code=404, detail="Товар не найден в корзине")
+            raise HTTPException(status_code=404, detail="Cart item not found")
         
         if quantity <= 0:
-            # Удаляем товар из корзины
             db.delete(cart_item)
         else:
-            # Проверяем наличие товара на складе
-            product = db.query(Product).filter(Product.id == product_id).first()
-            if product and product.quantity < quantity:
-                raise HTTPException(status_code=400, detail="Недостаточно товара на складе")
-            
             cart_item.quantity = quantity
         
         db.commit()
-        
-        return {"success": True, "message": "Корзина обновлена"}
-        
-    except HTTPException:
-        raise
+        return {"status": "success"}
+    
     except Exception as e:
-        logger.error(f"Error updating cart item: {e}")
-        db.rollback()
-        raise HTTPException(status_code=500, detail="Ошибка обновления корзины")
+        raise HTTPException(status_code=500, detail=str(e))
 
-
-@router.delete("/cart/remove/{product_id}")
-async def remove_from_cart(
-    product_id: int,
-    request: Request,
-    db: Session = Depends(get_db)
-):
-    """
-    Удаление товара из корзины
-    """
+@router.post("/api/cart/remove")
+async def remove_from_cart(request: Request, db: Session = Depends(get_db)):
     try:
-        session_id = get_session_id(request)
+        body = await request.json()
+        item_id = body.get("item_id")
         
+        if not item_id:
+            raise HTTPException(status_code=400, detail="item_id is required")
+        
+        session_id = get_session_id(request)
         cart_item = db.query(ShopCart).filter(
-            ShopCart.session_id == session_id,
-            ShopCart.product_id == product_id
+            ShopCart.id == item_id,
+            ShopCart.session_id == session_id
         ).first()
         
         if not cart_item:
-            raise HTTPException(status_code=404, detail="Товар не найден в корзине")
+            raise HTTPException(status_code=404, detail="Cart item not found")
         
         db.delete(cart_item)
         db.commit()
-        
-        return {"success": True, "message": "Товар удален из корзины"}
-        
-    except HTTPException:
-        raise
+        return {"status": "success"}
+    
     except Exception as e:
-        logger.error(f"Error removing from cart: {e}")
-        db.rollback()
-        raise HTTPException(status_code=500, detail="Ошибка удаления товара из корзины")
+        raise HTTPException(status_code=500, detail=str(e))
 
-
-@router.get("/cart")
-async def get_cart(request: Request, db: Session = Depends(get_db)):
-    """
-    Получение содержимого корзины
-    """
-    try:
-        session_id = get_session_id(request)
-        
-        # Получаем товары в корзине
-        cart_items = db.query(ShopCart).filter(ShopCart.session_id == session_id).all()
-        
-        # Подготавливаем данные
-        items = []
-        total_amount = 0
-        
-        for item in cart_items:
-            product = db.query(Product).filter(Product.id == item.product_id).first()
-            if product:
-                item_total = float(product.sell_price_rub or 0) * item.quantity
-                items.append({
-                    "product_id": product.id,
-                    "product_name": product.name,
-                    "quantity": item.quantity,
-                    "unit_price_rub": float(product.sell_price_rub or 0),
-                    "total_price": item_total
-                })
-                total_amount += item_total
-        
-        return ShopCartSummary(
-            items=items,
-            total_items=len(items),
-            total_amount=total_amount
-        )
-        
-    except Exception as e:
-        logger.error(f"Error getting cart: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка получения корзины")
-
-
-@router.delete("/cart/clear")
+@router.post("/api/cart/clear")
 async def clear_cart(request: Request, db: Session = Depends(get_db)):
-    """
-    Очистка корзины
-    """
-    try:
-        session_id = get_session_id(request)
-        
-        db.query(ShopCart).filter(ShopCart.session_id == session_id).delete()
-        db.commit()
-        
-        return {"success": True, "message": "Корзина очищена"}
-        
-    except Exception as e:
-        logger.error(f"Error clearing cart: {e}")
-        db.rollback()
-        raise HTTPException(status_code=500, detail="Ошибка очистки корзины")
-
-
-@router.get("/products")
-async def get_products(
-    skip: int = 0,
-    limit: int = 20,
-    status: str = None,
-    db: Session = Depends(get_db)
-):
-    """
-    Получение списка товаров
-    """
-    try:
-        query = db.query(Product)
-        
-        if status:
-            query = query.filter(Product.availability_status == status)
-        
-        total = query.count()
-        products = query.offset(skip).limit(limit).all()
-        
-        return {
-            "products": products,
-            "total": total,
-            "skip": skip,
-            "limit": limit
-        }
-        
-    except Exception as e:
-        logger.error(f"Error getting products: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка получения товаров")
-
-
-@router.get("/products/{product_id}")
-async def get_product(product_id: int, db: Session = Depends(get_db)):
-    """
-    Получение товара по ID
-    """
-    try:
-        product = db.query(Product).filter(Product.id == product_id).first()
-        if not product:
-            raise HTTPException(status_code=404, detail="Товар не найден")
-        
-        return product
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error getting product: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка получения товара")
+    session_id = get_session_id(request)
+    db.query(ShopCart).filter(ShopCart.session_id == session_id).delete()
+    db.commit()
+    return {"status": "success"}

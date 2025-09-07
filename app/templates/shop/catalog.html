@@ -1,163 +1,245 @@
 {% extends "base.html" %}
 
-{% block title %}Каталог товаров - Sirius Group V2{% endblock %}
+{% block title %}Каталог товаров - Sirius Shop{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 py-8">
+<div class="min-h-screen bg-gray-50">
     <!-- Header -->
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-800 mb-4">
-            <i class="fas fa-shopping-bag mr-2"></i>Каталог товаров
-        </h1>
-        <p class="text-gray-600">
-            Выберите нужные товары и добавьте их в корзину
-        </p>
-    </div>
-
-    <!-- Filters -->
-    <div class="bg-white p-4 rounded-lg shadow-md mb-8">
-        <div class="flex flex-wrap gap-4">
-            <select id="status-filter" class="border border-gray-300 rounded-lg px-3 py-2">
-                <option value="">Все статусы</option>
-                <option value="IN_STOCK">В наличии</option>
-                <option value="ON_ORDER">Под заказ</option>
-                <option value="IN_TRANSIT">В пути</option>
-            </select>
-            <input type="text" id="search-input" placeholder="Поиск товаров..." class="border border-gray-300 rounded-lg px-3 py-2 flex-1 min-w-64">
+    <div class="bg-white shadow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-6">
+                <div class="flex items-center">
+                    <h1 class="text-3xl font-bold text-gray-900">Sirius Shop</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/admin" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+                        <i class="fas fa-cog mr-2"></i>Админ
+                    </a>
+                    <div class="relative">
+                        <button onclick="toggleCart()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-shopping-cart mr-2"></i>
+                            Корзина (<span id="cartCount">0</span>)
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Products Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="products-grid">
-        {% for product in products %}
-        <div class="bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300 product-card" 
-             data-name="{{ product.name.lower() }}" 
-             data-status="{{ product.availability_status }}">
-            <div class="p-6">
-                <div class="mb-4">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {% for product in products %}
+            <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                <!-- Product Image -->
+                <div class="aspect-w-16 aspect-h-9 bg-gray-200">
                     {% if product.photo_path %}
-                    <div class="w-full h-32 bg-gray-200 rounded-lg overflow-hidden mb-4">
-                        <img src="/uploads/{{ product.photo_path }}" 
-                             alt="{{ product.name }}" 
-                             class="w-full h-full object-cover"
-                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                        <div class="w-full h-full bg-gray-200 flex items-center justify-center" style="display: none;">
-                            <i class="fas fa-image text-gray-400 text-3xl"></i>
+                    <img src="/uploads/{{ product.photo_path }}" 
+                         alt="{{ product.name }}" 
+                         class="w-full h-48 object-cover"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="w-full h-48 bg-gray-200 flex items-center justify-center" style="display: none;">
+                        <i class="fas fa-image text-gray-400 text-4xl"></i>
+                    </div>
+                    {% else %}
+                    <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
+                        <i class="fas fa-image text-gray-400 text-4xl"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Product Info -->
+                <div class="p-4">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ product.name }}</h3>
+                    {% if product.description %}
+                    <p class="text-gray-600 text-sm mb-3 line-clamp-2">{{ product.description }}</p>
+                    {% endif %}
+                    
+                    <!-- Status and Price -->
+                    <div class="mb-3">
+                        {% if product.availability_status == 'IN_STOCK' %}
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 mb-2">
+                            <i class="fas fa-check-circle mr-1"></i>В наличии
+                        </span>
+                        {% elif product.availability_status == 'IN_TRANSIT' %}
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 mb-2">
+                            <i class="fas fa-truck mr-1"></i>В пути
+                            {% if product.expected_date %}
+                            <br><small>Прибытие: {{ product.expected_date.strftime('%d.%m.%Y') }}</small>
+                            {% endif %}
+                        </span>
+                        {% elif product.availability_status == 'ON_ORDER' %}
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800 mb-2">
+                            <i class="fas fa-shopping-cart mr-1"></i>Под заказ
+                        </span>
+                        {% endif %}
+                        
+                        <div class="text-xl font-bold text-gray-900">
+                            {{ "%.2f"|format(product.sell_price_rub) }} ₽
                         </div>
                     </div>
-                    {% else %}
-                    <div class="w-full h-32 bg-gray-200 rounded-lg flex items-center justify-center mb-4">
-                        <i class="fas fa-image text-gray-400 text-3xl"></i>
+                    
+                    <!-- Actions -->
+                    <div class="flex space-x-2">
+                        <button onclick="viewProduct({{ product.id }})" class="flex-1 bg-gray-200 text-gray-800 py-2 px-3 rounded-lg hover:bg-gray-300 transition duration-300">
+                            <i class="fas fa-eye mr-1"></i>Подробнее
+                        </button>
+                        
+                        {% if product.availability_status == 'IN_STOCK' and product.quantity > 0 %}
+                        <button onclick="addToCart({{ product.id }})" class="flex-1 bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 transition duration-300">
+                            <i class="fas fa-cart-plus mr-1"></i>В корзину
+                        </button>
+                        {% elif product.availability_status == 'IN_TRANSIT' %}
+                        <button disabled class="flex-1 bg-blue-300 text-blue-700 py-2 px-3 rounded-lg cursor-not-allowed">
+                            <i class="fas fa-truck mr-1"></i>В пути
+                        </button>
+                        {% elif product.availability_status == 'ON_ORDER' %}
+                        <button onclick="addToCart({{ product.id }})" class="flex-1 bg-yellow-600 text-white py-2 px-3 rounded-lg hover:bg-yellow-700 transition duration-300">
+                            <i class="fas fa-shopping-cart mr-1"></i>Под заказ
+                        </button>
+                        {% else %}
+                        <button disabled class="flex-1 bg-gray-300 text-gray-500 py-2 px-3 rounded-lg cursor-not-allowed">
+                            <i class="fas fa-ban mr-1"></i>Недоступно
+                        </button>
+                        {% endif %}
                     </div>
-                    {% endif %}
-                    <h3 class="text-lg font-semibold mb-2">{{ product.name }}</h3>
-                    <p class="text-gray-600 text-sm mb-4">
-                        {{ product.description or "Описание отсутствует" }}
-                    </p>
-                </div>
-                
-                <div class="mb-4">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-2xl font-bold text-blue-600">
-                            {{ "%.2f"|format(product.sell_price_rub or 0) }} ₽
-                        </span>
-                        <span class="text-sm px-2 py-1 rounded-full
-                            {% if product.availability_status == 'IN_STOCK' %}bg-green-100 text-green-800
-                            {% elif product.availability_status == 'ON_ORDER' %}bg-yellow-100 text-yellow-800
-                            {% else %}bg-blue-100 text-blue-800{% endif %}">
-                            {% if product.availability_status == 'IN_STOCK' %}В наличии
-                            {% elif product.availability_status == 'ON_ORDER' %}Под заказ
-                            {% else %}В пути{% endif %}
-                        </span>
-                    </div>
-                    <div class="text-sm text-gray-500">
-                        В наличии: {{ product.quantity }} шт.
-                    </div>
-                </div>
-                
-                <div class="space-y-2">
-                    <a href="/shop/product/{{ product.id }}" class="w-full bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition duration-300 text-center block">
-                        <i class="fas fa-eye mr-2"></i>Подробнее
-                    </a>
-                    {% if product.availability_status == 'IN_STOCK' and product.quantity > 0 %}
-                    <button onclick="addToCart({{ product.id }})" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">
-                        <i class="fas fa-cart-plus mr-2"></i>В корзину
-                    </button>
-                    {% elif product.availability_status == 'IN_TRANSIT' %}
-                    <button disabled class="w-full bg-blue-300 text-blue-700 py-2 px-4 rounded-lg cursor-not-allowed">
-                        <i class="fas fa-truck mr-2"></i>В пути
-                    </button>
-                    {% elif product.availability_status == 'ON_ORDER' %}
-                    <button onclick="addToCart({{ product.id }})" class="w-full bg-yellow-600 text-white py-2 px-4 rounded-lg hover:bg-yellow-700 transition duration-300">
-                        <i class="fas fa-shopping-cart mr-2"></i>Под заказ
-                    </button>
-                    {% else %}
-                    <button disabled class="w-full bg-gray-300 text-gray-500 py-2 px-4 rounded-lg cursor-not-allowed">
-                        <i class="fas fa-ban mr-2"></i>Недоступно
-                    </button>
-                    {% endif %}
                 </div>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
-
-    <!-- Empty State -->
-    <div id="empty-state" class="text-center py-12 hidden">
-        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-gray-100 mb-4">
-            <i class="fas fa-search text-gray-400 text-2xl"></i>
+        
+        {% if not products %}
+        <div class="text-center py-12">
+            <i class="fas fa-box-open text-gray-400 text-6xl mb-4"></i>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Товары не найдены</h3>
+            <p class="text-gray-500">В каталоге пока нет товаров</p>
         </div>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">Товары не найдены</h3>
-        <p class="text-gray-500">Попробуйте изменить фильтры или поисковый запрос</p>
+        {% endif %}
     </div>
 </div>
 
+<!-- Cart Sidebar -->
+<div id="cartSidebar" class="fixed inset-y-0 right-0 w-96 bg-white shadow-xl transform translate-x-full transition-transform duration-300 ease-in-out z-50">
+    <div class="flex flex-col h-full">
+        <!-- Cart Header -->
+        <div class="flex items-center justify-between p-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">Корзина</h3>
+            <button onclick="toggleCart()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- Cart Items -->
+        <div id="cartItems" class="flex-1 overflow-y-auto p-4">
+            <div class="text-center text-gray-500">
+                <i class="fas fa-shopping-cart text-4xl mb-2"></i>
+                <p>Корзина пуста</p>
+            </div>
+        </div>
+        
+        <!-- Cart Footer -->
+        <div class="border-t border-gray-200 p-4">
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-lg font-semibold">Итого:</span>
+                <span id="cartTotal" class="text-lg font-bold text-blue-600">0 ₽</span>
+            </div>
+            <button onclick="checkout()" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition duration-300">
+                Оформить заказ
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Cart Overlay -->
+<div id="cartOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-40" onclick="toggleCart()"></div>
+{% endblock %}
+
+{% block scripts %}
 <script>
-// Фильтрация и поиск товаров
-document.addEventListener('DOMContentLoaded', function() {
-    const statusFilter = document.getElementById('status-filter');
-    const searchInput = document.getElementById('search-input');
-    const productsGrid = document.getElementById('products-grid');
-    const emptyState = document.getElementById('empty-state');
-    const productCards = document.querySelectorAll('.product-card');
-
-    function filterProducts() {
-        const statusValue = statusFilter.value;
-        const searchValue = searchInput.value.toLowerCase();
-        let visibleCount = 0;
-
-        productCards.forEach(card => {
-            const name = card.dataset.name;
-            const status = card.dataset.status;
-            
-            const matchesStatus = !statusValue || status === statusValue;
-            const matchesSearch = !searchValue || name.includes(searchValue);
-            
-            if (matchesStatus && matchesSearch) {
-                card.style.display = 'block';
-                visibleCount++;
-            } else {
-                card.style.display = 'none';
-            }
-        });
-
-        if (visibleCount === 0) {
-            productsGrid.style.display = 'none';
-            emptyState.classList.remove('hidden');
+    let cartOpen = false;
+    
+    // Load cart count on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCartCount();
+    });
+    
+    function toggleCart() {
+        cartOpen = !cartOpen;
+        const sidebar = document.getElementById('cartSidebar');
+        const overlay = document.getElementById('cartOverlay');
+        
+        if (cartOpen) {
+            sidebar.classList.remove('translate-x-full');
+            overlay.classList.remove('hidden');
+            loadCart();
         } else {
-            productsGrid.style.display = 'grid';
-            emptyState.classList.add('hidden');
+            sidebar.classList.add('translate-x-full');
+            overlay.classList.add('hidden');
         }
     }
-
-    statusFilter.addEventListener('change', filterProducts);
-    searchInput.addEventListener('input', filterProducts);
-});
-
-// Добавление товара в корзину
-async function addToCart(productId) {
-    try {
-        const response = await fetch('/api/shop/cart/add', {
+    
+    function updateCartCount() {
+        fetch('/api/cart/count')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('cartCount').textContent = data.count;
+            })
+            .catch(error => console.error('Error:', error));
+    }
+    
+    function loadCart() {
+        fetch('/api/cart')
+            .then(response => response.json())
+            .then(data => {
+                const cartItems = document.getElementById('cartItems');
+                const cartTotal = document.getElementById('cartTotal');
+                
+                if (data.items.length === 0) {
+                    cartItems.innerHTML = `
+                        <div class="text-center text-gray-500">
+                            <i class="fas fa-shopping-cart text-4xl mb-2"></i>
+                            <p>Корзина пуста</p>
+                        </div>
+                    `;
+                    cartTotal.textContent = '0 ₽';
+                } else {
+                    cartItems.innerHTML = data.items.map(item => `
+                        <div class="flex items-center space-x-3 mb-4 p-3 bg-gray-50 rounded-lg">
+                            <div class="flex-shrink-0">
+                                ${item.photo_path ? 
+                                    `<img src="/uploads/${item.photo_path}" alt="${item.name}" class="w-12 h-12 object-cover rounded">` :
+                                    `<div class="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
+                                        <i class="fas fa-image text-gray-400"></i>
+                                    </div>`
+                                }
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="text-sm font-medium text-gray-900">${item.name}</h4>
+                                <p class="text-sm text-gray-500">${item.price.toFixed(2)} ₽</p>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button onclick="updateCartItem(${item.id}, ${item.quantity - 1})" class="text-gray-400 hover:text-gray-600">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <span class="text-sm font-medium">${item.quantity}</span>
+                                <button onclick="updateCartItem(${item.id}, ${item.quantity + 1})" class="text-gray-400 hover:text-gray-600">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <button onclick="removeFromCart(${item.id})" class="text-red-400 hover:text-red-600">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `).join('');
+                    
+                    cartTotal.textContent = `${data.total.toFixed(2)} ₽`;
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+    
+    function addToCart(productId) {
+        fetch('/api/cart/add', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -166,55 +248,75 @@ async function addToCart(productId) {
                 product_id: productId,
                 quantity: 1
             })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showNotification('Товар добавлен в корзину', 'success');
+                updateCartCount();
+            } else {
+                showNotification(data.message || 'Ошибка при добавлении товара', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Ошибка при добавлении товара', 'error');
         });
-
-        const data = await response.json();
-        
-        if (data.success) {
-            // Показываем уведомление
-            showNotification('Товар добавлен в корзину!', 'success');
-            // Обновляем счетчик корзины
-            updateCartCount();
-        } else {
-            showNotification(data.message || 'Ошибка добавления товара', 'error');
-        }
-    } catch (error) {
-        console.error('Error adding to cart:', error);
-        showNotification('Ошибка добавления товара', 'error');
     }
-}
-
-// Показ уведомлений
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
-        type === 'success' ? 'bg-green-500 text-white' :
-        type === 'error' ? 'bg-red-500 text-white' :
-        'bg-blue-500 text-white'
-    }`;
-    notification.textContent = message;
     
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
-}
-
-// Обновление счетчика корзины
-async function updateCartCount() {
-    try {
-        const response = await fetch('/api/shop/cart/count');
-        const data = await response.json();
-        
-        // Обновляем счетчик в навигации (если есть)
-        const cartCountElement = document.querySelector('.cart-count');
-        if (cartCountElement) {
-            cartCountElement.textContent = data.count;
+    function updateCartItem(itemId, newQuantity) {
+        if (newQuantity <= 0) {
+            removeFromCart(itemId);
+            return;
         }
-    } catch (error) {
-        console.error('Error updating cart count:', error);
+        
+        fetch('/api/cart/update', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                item_id: itemId,
+                quantity: newQuantity
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                loadCart();
+                updateCartCount();
+            }
+        })
+        .catch(error => console.error('Error:', error));
     }
-}
+    
+    function removeFromCart(itemId) {
+        fetch('/api/cart/remove', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                item_id: itemId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                loadCart();
+                updateCartCount();
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+    
+    function viewProduct(productId) {
+        window.location.href = `/product/${productId}`;
+    }
+    
+    function checkout() {
+        // TODO: Implement checkout
+        showNotification('Функция оформления заказа в разработке', 'error');
+    }
 </script>
 {% endblock %}

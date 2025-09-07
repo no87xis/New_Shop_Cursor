@@ -1,1 +1,1 @@
-# Сервисы Sirius Group V2
+# Services package
