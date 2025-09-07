@@ -19,6 +19,7 @@ class Product(BaseModel):
     supplier_name = Column(String)
     availability_status = Column(String(20), default="IN_STOCK", nullable=False)  # IN_STOCK, ON_ORDER, IN_TRANSIT
     expected_date = Column(Date)  # дата ожидаемого поступления
+    photo_path = Column(String)  # путь к фото товара
     
     def __repr__(self):
         return f"<Product(name='{self.name}', quantity={self.quantity}, status='{self.availability_status}')>"

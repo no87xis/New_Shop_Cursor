@@ -85,12 +85,18 @@ class ProductService(BaseService[Product, ProductCreate, ProductUpdate]):
             product.quantity = new_quantity
             
             # Обновляем статус в зависимости от количества
+            # Если товар заканчивается, переводим в статус "Под заказ"
             if new_quantity <= 0:
-                product.availability_status = "OUT_OF_STOCK"
+                product.availability_status = "ON_ORDER"
             elif new_quantity <= product.min_stock:
-                product.availability_status = "LOW_STOCK"
+                # Если количество ниже минимального, но больше 0, оставляем текущий статус
+                # или переводим в "Под заказ" если был "В наличии"
+                if product.availability_status == "IN_STOCK":
+                    product.availability_status = "ON_ORDER"
             else:
-                product.availability_status = "IN_STOCK"
+                # Если количество достаточное, переводим в "В наличии"
+                if product.availability_status == "ON_ORDER":
+                    product.availability_status = "IN_STOCK"
             
             self.db.commit()
             self.db.refresh(product)
@@ -167,8 +173,9 @@ class ProductService(BaseService[Product, ProductCreate, ProductUpdate]):
         try:
             total_products = self.count()
             in_stock = self.count({"availability_status": "IN_STOCK"})
+            in_transit = self.count({"availability_status": "IN_TRANSIT"})
+            on_order = self.count({"availability_status": "ON_ORDER"})
             low_stock = len(self.get_low_stock_products())
-            out_of_stock = self.count({"availability_status": "OUT_OF_STOCK"})
             
             # Общая стоимость товаров на складе
             products = self.db.query(Product).all()
@@ -180,8 +187,9 @@ class ProductService(BaseService[Product, ProductCreate, ProductUpdate]):
             return {
                 "total_products": total_products,
                 "in_stock": in_stock,
+                "in_transit": in_transit,
+                "on_order": on_order,
                 "low_stock": low_stock,
-                "out_of_stock": out_of_stock,
                 "total_value": total_value,
                 "average_price": total_value / total_products if total_products > 0 else 0
             }

@@ -35,9 +35,21 @@
              data-status="{{ product.availability_status }}">
             <div class="p-6">
                 <div class="mb-4">
+                    {% if product.photo_path %}
+                    <div class="w-full h-32 bg-gray-200 rounded-lg overflow-hidden mb-4">
+                        <img src="/uploads/{{ product.photo_path }}" 
+                             alt="{{ product.name }}" 
+                             class="w-full h-full object-cover"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="w-full h-full bg-gray-200 flex items-center justify-center" style="display: none;">
+                            <i class="fas fa-image text-gray-400 text-3xl"></i>
+                        </div>
+                    </div>
+                    {% else %}
                     <div class="w-full h-32 bg-gray-200 rounded-lg flex items-center justify-center mb-4">
                         <i class="fas fa-image text-gray-400 text-3xl"></i>
                     </div>
+                    {% endif %}
                     <h3 class="text-lg font-semibold mb-2">{{ product.name }}</h3>
                     <p class="text-gray-600 text-sm mb-4">
                         {{ product.description or "Описание отсутствует" }}
@@ -70,6 +82,14 @@
                     {% if product.availability_status == 'IN_STOCK' and product.quantity > 0 %}
                     <button onclick="addToCart({{ product.id }})" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">
                         <i class="fas fa-cart-plus mr-2"></i>В корзину
+                    </button>
+                    {% elif product.availability_status == 'IN_TRANSIT' %}
+                    <button disabled class="w-full bg-blue-300 text-blue-700 py-2 px-4 rounded-lg cursor-not-allowed">
+                        <i class="fas fa-truck mr-2"></i>В пути
+                    </button>
+                    {% elif product.availability_status == 'ON_ORDER' %}
+                    <button onclick="addToCart({{ product.id }})" class="w-full bg-yellow-600 text-white py-2 px-4 rounded-lg hover:bg-yellow-700 transition duration-300">
+                        <i class="fas fa-shopping-cart mr-2"></i>Под заказ
                     </button>
                     {% else %}
                     <button disabled class="w-full bg-gray-300 text-gray-500 py-2 px-4 rounded-lg cursor-not-allowed">
@@ -179,6 +199,22 @@ function showNotification(message, type = 'info') {
     setTimeout(() => {
         notification.remove();
     }, 3000);
+}
+
+// Обновление счетчика корзины
+async function updateCartCount() {
+    try {
+        const response = await fetch('/api/shop/cart/count');
+        const data = await response.json();
+        
+        // Обновляем счетчик в навигации (если есть)
+        const cartCountElement = document.querySelector('.cart-count');
+        if (cartCountElement) {
+            cartCountElement.textContent = data.count;
+        }
+    } catch (error) {
+        console.error('Error updating cart count:', error);
+    }
 }
 </script>
 {% endblock %}

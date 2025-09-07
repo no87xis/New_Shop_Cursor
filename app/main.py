@@ -64,6 +64,15 @@ try:
         logger.info("Static files mounted successfully")
     else:
         logger.warning("Static files directory not found")
+    
+    # Загруженные файлы
+    if os.path.exists("uploads"):
+        app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+        logger.info("Uploads directory mounted successfully")
+    else:
+        os.makedirs("uploads", exist_ok=True)
+        app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+        logger.info("Uploads directory created and mounted")
 except Exception as e:
     logger.error(f"Error mounting static files: {e}")
 

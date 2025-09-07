@@ -30,14 +30,14 @@
         </div>
         <div class="bg-white p-6 rounded-lg shadow-md">
             <div class="text-center">
-                <div class="text-2xl font-bold text-yellow-600">{{ stats.low_stock or 0 }}</div>
-                <div class="text-sm text-gray-600">Низкий остаток</div>
+                <div class="text-2xl font-bold text-blue-500">{{ stats.in_transit or 0 }}</div>
+                <div class="text-sm text-gray-600">В пути</div>
             </div>
         </div>
         <div class="bg-white p-6 rounded-lg shadow-md">
             <div class="text-center">
-                <div class="text-2xl font-bold text-red-600">{{ stats.out_of_stock or 0 }}</div>
-                <div class="text-sm text-gray-600">Нет в наличии</div>
+                <div class="text-2xl font-bold text-yellow-600">{{ stats.on_order or 0 }}</div>
+                <div class="text-sm text-gray-600">Под заказ</div>
             </div>
         </div>
     </div>
@@ -55,8 +55,7 @@
             <select id="status-filter" class="border border-gray-300 rounded-lg px-3 py-2">
                 <option value="">Все статусы</option>
                 <option value="IN_STOCK" {% if current_status == 'IN_STOCK' %}selected{% endif %}>В наличии</option>
-                <option value="LOW_STOCK" {% if current_status == 'LOW_STOCK' %}selected{% endif %}>Низкий остаток</option>
-                <option value="OUT_OF_STOCK" {% if current_status == 'OUT_OF_STOCK' %}selected{% endif %}>Нет в наличии</option>
+                <option value="IN_TRANSIT" {% if current_status == 'IN_TRANSIT' %}selected{% endif %}>В пути</option>
                 <option value="ON_ORDER" {% if current_status == 'ON_ORDER' %}selected{% endif %}>Под заказ</option>
             </select>
             <button onclick="applyFilters()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-300">
@@ -98,9 +97,28 @@
                     {% for product in products %}
                     <tr class="product-row" data-product-id="{{ product.id }}">
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div>
-                                <div class="text-sm font-medium text-gray-900">{{ product.name }}</div>
-                                <div class="text-sm text-gray-500">{{ product.description or "Без описания" }}</div>
+                            <div class="flex items-center">
+                                {% if product.photo_path %}
+                                <div class="flex-shrink-0 h-12 w-12 mr-4">
+                                    <img class="h-12 w-12 rounded-lg object-cover" 
+                                         src="/uploads/{{ product.photo_path }}" 
+                                         alt="{{ product.name }}"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    <div class="h-12 w-12 rounded-lg bg-gray-200 flex items-center justify-center" style="display: none;">
+                                        <i class="fas fa-image text-gray-400"></i>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div class="flex-shrink-0 h-12 w-12 mr-4">
+                                    <div class="h-12 w-12 rounded-lg bg-gray-200 flex items-center justify-center">
+                                        <i class="fas fa-image text-gray-400"></i>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900">{{ product.name }}</div>
+                                    <div class="text-sm text-gray-500">{{ product.description or "Без описания" }}</div>
+                                </div>
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
@@ -116,14 +134,19 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
                                 {% if product.availability_status == 'IN_STOCK' %}bg-green-100 text-green-800
-                                {% elif product.availability_status == 'LOW_STOCK' %}bg-yellow-100 text-yellow-800
-                                {% elif product.availability_status == 'OUT_OF_STOCK' %}bg-red-100 text-red-800
-                                {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                {% elif product.availability_status == 'IN_TRANSIT' %}bg-blue-100 text-blue-800
+                                {% elif product.availability_status == 'ON_ORDER' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
                                 {% if product.availability_status == 'IN_STOCK' %}В наличии
-                                {% elif product.availability_status == 'LOW_STOCK' %}Низкий остаток
-                                {% elif product.availability_status == 'OUT_OF_STOCK' %}Нет в наличии
+                                {% elif product.availability_status == 'IN_TRANSIT' %}В пути
+                                {% elif product.availability_status == 'ON_ORDER' %}Под заказ
                                 {% else %}{{ product.availability_status }}{% endif %}
                             </span>
+                            {% if product.availability_status == 'IN_TRANSIT' and product.expected_date %}
+                            <div class="text-xs text-gray-500 mt-1">
+                                Ожидается: {{ product.expected_date.strftime('%d.%m.%Y') }}
+                            </div>
+                            {% endif %}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {{ product.supplier_name or "Не указан" }}
@@ -171,7 +194,7 @@
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">
                     <i class="fas fa-plus mr-2"></i>Добавить товар
                 </h3>
-                <form method="POST" action="/admin/products">
+                <form method="POST" action="/admin/products" enctype="multipart/form-data">
                     <div class="space-y-4">
                         <div>
                             <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
@@ -256,12 +279,32 @@
                             </label>
                             <select id="availability_status" 
                                     name="availability_status"
-                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    onchange="toggleExpectedDate()">
                                 <option value="IN_STOCK">В наличии</option>
-                                <option value="LOW_STOCK">Низкий остаток</option>
-                                <option value="OUT_OF_STOCK">Нет в наличии</option>
+                                <option value="IN_TRANSIT">В пути</option>
                                 <option value="ON_ORDER">Под заказ</option>
                             </select>
+                        </div>
+                        <div id="expected-date-field" class="hidden">
+                            <label for="expected_date" class="block text-sm font-medium text-gray-700 mb-1">
+                                Ожидаемая дата прибытия
+                            </label>
+                            <input type="date" 
+                                   id="expected_date" 
+                                   name="expected_date"
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="product_photo" class="block text-sm font-medium text-gray-700 mb-1">
+                                Фото товара
+                            </label>
+                            <input type="file" 
+                                   id="product_photo" 
+                                   name="product_photo"
+                                   accept="image/*"
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <p class="text-xs text-gray-500 mt-1">Поддерживаются форматы: JPG, PNG, GIF. Максимальный размер: 5MB</p>
                         </div>
                     </div>
                     <div class="flex justify-end space-x-3 mt-6">
@@ -306,24 +349,51 @@ function applyFilters() {
 
 // Редактирование товара
 function editProduct(productId) {
-    // Здесь должна быть логика редактирования
-    alert(`Редактирование товара ${productId} - функция в разработке`);
+    window.location.href = `/admin/products/${productId}/edit`;
 }
 
 // Обновление количества товара
 function updateQuantity(productId, currentQuantity) {
     const newQuantity = prompt(`Текущее количество: ${currentQuantity}\nВведите новое количество:`, currentQuantity);
-    if (newQuantity !== null && newQuantity !== '') {
-        // Здесь должен быть API вызов для обновления количества
-        alert(`Обновление количества товара ${productId} на ${newQuantity} - функция в разработке`);
+    if (newQuantity !== null && newQuantity !== '' && newQuantity !== currentQuantity.toString()) {
+        // Создаем форму для отправки POST запроса
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/admin/products/${productId}/update-quantity`;
+        
+        const quantityInput = document.createElement('input');
+        quantityInput.type = 'hidden';
+        quantityInput.name = 'quantity';
+        quantityInput.value = newQuantity;
+        
+        form.appendChild(quantityInput);
+        document.body.appendChild(form);
+        form.submit();
     }
 }
 
 // Удаление товара
 function deleteProduct(productId) {
     if (confirm('Вы уверены, что хотите удалить этот товар?')) {
-        // Здесь должен быть API вызов для удаления товара
-        alert(`Удаление товара ${productId} - функция в разработке`);
+        // Создаем форму для отправки POST запроса
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/admin/products/${productId}/delete`;
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Показать/скрыть поле даты в зависимости от статуса
+function toggleExpectedDate() {
+    const statusSelect = document.getElementById('availability_status');
+    const expectedDateField = document.getElementById('expected-date-field');
+    
+    if (statusSelect.value === 'IN_TRANSIT') {
+        expectedDateField.classList.remove('hidden');
+    } else {
+        expectedDateField.classList.add('hidden');
     }
 }
 

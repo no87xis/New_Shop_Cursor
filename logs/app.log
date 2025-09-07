@@ -1,0 +1,82 @@
+2025-09-07 19:57:30,341 - app.main - INFO - Session middleware added successfully
+2025-09-07 19:57:30,341 - app.main - WARNING - Static files directory not found
+2025-09-07 19:57:30,341 - app.main - INFO - Uploads directory created and mounted
+2025-09-07 19:57:30,360 - app.main - INFO - All routers included successfully
+2025-09-07 19:57:30,361 - app.main - INFO - Starting Sirius Group V2 application...
+2025-09-07 19:57:30,361 - app.db - ERROR - Database connection failed: Not an executable object: 'SELECT 1'
+2025-09-07 19:57:30,361 - app.main - ERROR - Database connection failed
+2025-09-07 19:57:30,361 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-07 19:57:30,361 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("products")
+2025-09-07 19:57:30,361 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-07 19:57:30,362 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("orders")
+2025-09-07 19:57:30,362 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-07 19:57:30,362 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("shop_orders")
+2025-09-07 19:57:30,362 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-07 19:57:30,362 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("shop_cart")
+2025-09-07 19:57:30,362 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-07 19:57:30,362 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("payment_methods")
+2025-09-07 19:57:30,362 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-07 19:57:30,362 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("payment_instruments")
+2025-09-07 19:57:30,362 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-07 19:57:30,362 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("users")
+2025-09-07 19:57:30,362 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-07 19:57:30,362 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-09-07 19:57:30,362 - app.db - INFO - Database tables created successfully
+2025-09-07 19:57:30,362 - app.main - INFO - Application startup completed successfully
+2025-09-07 19:57:32,084 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-07 19:57:32,086 - sqlalchemy.engine.Engine - INFO - SELECT products.name AS products_name, products.description AS products_description, products.detailed_description AS products_detailed_description, products.quantity AS products_quantity, products.min_stock AS products_min_stock, products.buy_price_eur AS products_buy_price_eur, products.sell_price_rub AS products_sell_price_rub, products.supplier_name AS products_supplier_name, products.availability_status AS products_availability_status, products.expected_date AS products_expected_date, products.photo_path AS products_photo_path, products.id AS products_id, products.created_at AS products_created_at, products.updated_at AS products_updated_at 
+FROM products
+ LIMIT ? OFFSET ?
+2025-09-07 19:57:32,086 - sqlalchemy.engine.Engine - INFO - [generated in 0.00016s] (20, 0)
+2025-09-07 19:57:32,088 - sqlalchemy.engine.Engine - INFO - SELECT count(*) AS count_1 
+FROM (SELECT products.name AS products_name, products.description AS products_description, products.detailed_description AS products_detailed_description, products.quantity AS products_quantity, products.min_stock AS products_min_stock, products.buy_price_eur AS products_buy_price_eur, products.sell_price_rub AS products_sell_price_rub, products.supplier_name AS products_supplier_name, products.availability_status AS products_availability_status, products.expected_date AS products_expected_date, products.photo_path AS products_photo_path, products.id AS products_id, products.created_at AS products_created_at, products.updated_at AS products_updated_at 
+FROM products) AS anon_1
+2025-09-07 19:57:32,089 - sqlalchemy.engine.Engine - INFO - [generated in 0.00014s] ()
+2025-09-07 19:57:32,090 - sqlalchemy.engine.Engine - INFO - SELECT count(*) AS count_1 
+FROM (SELECT products.name AS products_name, products.description AS products_description, products.detailed_description AS products_detailed_description, products.quantity AS products_quantity, products.min_stock AS products_min_stock, products.buy_price_eur AS products_buy_price_eur, products.sell_price_rub AS products_sell_price_rub, products.supplier_name AS products_supplier_name, products.availability_status AS products_availability_status, products.expected_date AS products_expected_date, products.photo_path AS products_photo_path, products.id AS products_id, products.created_at AS products_created_at, products.updated_at AS products_updated_at 
+FROM products 
+WHERE products.availability_status = ?) AS anon_1
+2025-09-07 19:57:32,090 - sqlalchemy.engine.Engine - INFO - [generated in 0.00015s] ('IN_STOCK',)
+2025-09-07 19:57:32,091 - sqlalchemy.engine.Engine - INFO - SELECT count(*) AS count_1 
+FROM (SELECT products.name AS products_name, products.description AS products_description, products.detailed_description AS products_detailed_description, products.quantity AS products_quantity, products.min_stock AS products_min_stock, products.buy_price_eur AS products_buy_price_eur, products.sell_price_rub AS products_sell_price_rub, products.supplier_name AS products_supplier_name, products.availability_status AS products_availability_status, products.expected_date AS products_expected_date, products.photo_path AS products_photo_path, products.id AS products_id, products.created_at AS products_created_at, products.updated_at AS products_updated_at 
+FROM products 
+WHERE products.availability_status = ?) AS anon_1
+2025-09-07 19:57:32,091 - sqlalchemy.engine.Engine - INFO - [cached since 0.0008317s ago] ('IN_TRANSIT',)
+2025-09-07 19:57:32,092 - sqlalchemy.engine.Engine - INFO - SELECT count(*) AS count_1 
+FROM (SELECT products.name AS products_name, products.description AS products_description, products.detailed_description AS products_detailed_description, products.quantity AS products_quantity, products.min_stock AS products_min_stock, products.buy_price_eur AS products_buy_price_eur, products.sell_price_rub AS products_sell_price_rub, products.supplier_name AS products_supplier_name, products.availability_status AS products_availability_status, products.expected_date AS products_expected_date, products.photo_path AS products_photo_path, products.id AS products_id, products.created_at AS products_created_at, products.updated_at AS products_updated_at 
+FROM products 
+WHERE products.availability_status = ?) AS anon_1
+2025-09-07 19:57:32,092 - sqlalchemy.engine.Engine - INFO - [cached since 0.001865s ago] ('ON_ORDER',)
+2025-09-07 19:57:32,093 - sqlalchemy.engine.Engine - INFO - SELECT products.name AS products_name, products.description AS products_description, products.detailed_description AS products_detailed_description, products.quantity AS products_quantity, products.min_stock AS products_min_stock, products.buy_price_eur AS products_buy_price_eur, products.sell_price_rub AS products_sell_price_rub, products.supplier_name AS products_supplier_name, products.availability_status AS products_availability_status, products.expected_date AS products_expected_date, products.photo_path AS products_photo_path, products.id AS products_id, products.created_at AS products_created_at, products.updated_at AS products_updated_at 
+FROM products 
+WHERE products.quantity <= products.min_stock
+2025-09-07 19:57:32,093 - sqlalchemy.engine.Engine - INFO - [generated in 0.00012s] ()
+2025-09-07 19:57:32,094 - sqlalchemy.engine.Engine - INFO - SELECT products.name AS products_name, products.description AS products_description, products.detailed_description AS products_detailed_description, products.quantity AS products_quantity, products.min_stock AS products_min_stock, products.buy_price_eur AS products_buy_price_eur, products.sell_price_rub AS products_sell_price_rub, products.supplier_name AS products_supplier_name, products.availability_status AS products_availability_status, products.expected_date AS products_expected_date, products.photo_path AS products_photo_path, products.id AS products_id, products.created_at AS products_created_at, products.updated_at AS products_updated_at 
+FROM products
+2025-09-07 19:57:32,094 - sqlalchemy.engine.Engine - INFO - [generated in 0.00012s] ()
+2025-09-07 19:57:32,104 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-07 19:57:34,679 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-07 19:57:34,680 - sqlalchemy.engine.Engine - INFO - SELECT products.name AS products_name, products.description AS products_description, products.detailed_description AS products_detailed_description, products.quantity AS products_quantity, products.min_stock AS products_min_stock, products.buy_price_eur AS products_buy_price_eur, products.sell_price_rub AS products_sell_price_rub, products.supplier_name AS products_supplier_name, products.availability_status AS products_availability_status, products.expected_date AS products_expected_date, products.photo_path AS products_photo_path, products.id AS products_id, products.created_at AS products_created_at, products.updated_at AS products_updated_at 
+FROM products 
+WHERE products.quantity > ?
+2025-09-07 19:57:34,680 - sqlalchemy.engine.Engine - INFO - [generated in 0.00012s] (0,)
+2025-09-07 19:57:34,681 - sqlalchemy.engine.Engine - INFO - SELECT count(*) AS count_1 
+FROM (SELECT shop_cart.session_id AS shop_cart_session_id, shop_cart.product_id AS shop_cart_product_id, shop_cart.quantity AS shop_cart_quantity, shop_cart.id AS shop_cart_id, shop_cart.created_at AS shop_cart_created_at, shop_cart.updated_at AS shop_cart_updated_at 
+FROM shop_cart 
+WHERE shop_cart.session_id = ?) AS anon_1
+2025-09-07 19:57:34,681 - sqlalchemy.engine.Engine - INFO - [generated in 0.00015s] ('7e9ba088-4d37-4ec2-b731-c3daf678c8d9',)
+2025-09-07 19:57:34,688 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-09-07 19:57:38,690 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-07 19:57:38,691 - sqlalchemy.engine.Engine - INFO - SELECT products.name AS products_name, products.description AS products_description, products.detailed_description AS products_detailed_description, products.quantity AS products_quantity, products.min_stock AS products_min_stock, products.buy_price_eur AS products_buy_price_eur, products.sell_price_rub AS products_sell_price_rub, products.supplier_name AS products_supplier_name, products.availability_status AS products_availability_status, products.expected_date AS products_expected_date, products.photo_path AS products_photo_path, products.id AS products_id, products.created_at AS products_created_at, products.updated_at AS products_updated_at 
+FROM products 
+WHERE products.id = ?
+ LIMIT ? OFFSET ?
+2025-09-07 19:57:38,691 - sqlalchemy.engine.Engine - INFO - [generated in 0.00016s] (1, 1, 0)
+2025-09-07 19:57:38,692 - sqlalchemy.engine.Engine - INFO - SELECT shop_cart.session_id AS shop_cart_session_id, shop_cart.product_id AS shop_cart_product_id, shop_cart.quantity AS shop_cart_quantity, shop_cart.id AS shop_cart_id, shop_cart.created_at AS shop_cart_created_at, shop_cart.updated_at AS shop_cart_updated_at 
+FROM shop_cart 
+WHERE shop_cart.session_id = ? AND shop_cart.product_id = ?
+ LIMIT ? OFFSET ?
+2025-09-07 19:57:38,692 - sqlalchemy.engine.Engine - INFO - [generated in 0.00017s] ('d74a5b8d-7120-4ddf-9298-6f4ef632b2bf', 1, 1, 0)
+2025-09-07 19:57:38,693 - sqlalchemy.engine.Engine - INFO - INSERT INTO shop_cart (session_id, product_id, quantity, updated_at) VALUES (?, ?, ?, ?) RETURNING id, created_at
+2025-09-07 19:57:38,693 - sqlalchemy.engine.Engine - INFO - [generated in 0.00014s] ('d74a5b8d-7120-4ddf-9298-6f4ef632b2bf', 1, 1, None)
+2025-09-07 19:57:38,694 - sqlalchemy.engine.Engine - INFO - COMMIT

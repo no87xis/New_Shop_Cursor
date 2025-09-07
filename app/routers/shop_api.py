@@ -1,10 +1,11 @@
 """
 API для магазина
 """
-from fastapi import APIRouter, Depends, HTTPException, Form
+from fastapi import APIRouter, Depends, HTTPException, Form, Request
 from sqlalchemy.orm import Session
 from typing import List
 import logging
+import json
 
 from app.db import get_db
 from app.models.product import Product
@@ -16,7 +17,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/shop", tags=["shop"])
 
 
-def get_session_id(request) -> str:
+def get_session_id(request: Request) -> str:
     """
     Получение ID сессии из запроса
     """
@@ -29,7 +30,7 @@ def get_session_id(request) -> str:
 
 
 @router.get("/cart/count")
-async def get_cart_count(request, db: Session = Depends(get_db)):
+async def get_cart_count(request: Request, db: Session = Depends(get_db)):
     """
     Получение количества товаров в корзине
     """
@@ -44,21 +45,32 @@ async def get_cart_count(request, db: Session = Depends(get_db)):
 
 @router.post("/cart/add")
 async def add_to_cart(
-    product_id: int,
-    quantity: int,
-    request,
+    request: Request,
     db: Session = Depends(get_db)
 ):
     """
     Добавление товара в корзину
     """
     try:
+        # Получаем данные из JSON
+        body = await request.json()
+        product_id = body.get("product_id")
+        quantity = body.get("quantity", 1)
+        
+        if not product_id:
+            raise HTTPException(status_code=400, detail="Не указан ID товара")
+        
         # Проверяем существование товара
         product = db.query(Product).filter(Product.id == product_id).first()
         if not product:
             raise HTTPException(status_code=404, detail="Товар не найден")
         
-        if product.quantity < quantity:
+        # Проверяем доступность товара
+        if product.availability_status not in ["IN_STOCK", "ON_ORDER"]:
+            raise HTTPException(status_code=400, detail="Товар недоступен для заказа")
+        
+        # Для товаров в наличии проверяем количество
+        if product.availability_status == "IN_STOCK" and product.quantity < quantity:
             raise HTTPException(status_code=400, detail="Недостаточно товара на складе")
         
         session_id = get_session_id(request)
@@ -97,20 +109,62 @@ async def add_to_cart(
 async def add_to_cart_form(
     product_id: int = Form(...),
     quantity: int = Form(...),
-    request=None,
+    request: Request = None,
     db: Session = Depends(get_db)
 ):
     """
     Добавление товара в корзину через form data
     """
-    return await add_to_cart(product_id, quantity, request, db)
+    # Создаем JSON данные для передачи в add_to_cart
+    class MockRequest:
+        def __init__(self, session_id):
+            self.session = {"session_id": session_id}
+    
+    mock_request = MockRequest(get_session_id(request))
+    
+    # Проверяем существование товара
+    product = db.query(Product).filter(Product.id == product_id).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Товар не найден")
+    
+    # Проверяем доступность товара
+    if product.availability_status not in ["IN_STOCK", "ON_ORDER"]:
+        raise HTTPException(status_code=400, detail="Товар недоступен для заказа")
+    
+    # Для товаров в наличии проверяем количество
+    if product.availability_status == "IN_STOCK" and product.quantity < quantity:
+        raise HTTPException(status_code=400, detail="Недостаточно товара на складе")
+    
+    session_id = get_session_id(request)
+    
+    # Проверяем, есть ли уже такой товар в корзине
+    existing_item = db.query(ShopCart).filter(
+        ShopCart.session_id == session_id,
+        ShopCart.product_id == product_id
+    ).first()
+    
+    if existing_item:
+        # Обновляем количество
+        existing_item.quantity += quantity
+    else:
+        # Создаем новый элемент корзины
+        cart_item = ShopCart(
+            session_id=session_id,
+            product_id=product_id,
+            quantity=quantity
+        )
+        db.add(cart_item)
+    
+    db.commit()
+    
+    return {"success": True, "message": "Товар добавлен в корзину"}
 
 
 @router.put("/cart/update/{product_id}")
 async def update_cart_item(
     product_id: int,
     quantity: int,
-    request,
+    request: Request,
     db: Session = Depends(get_db)
 ):
     """
@@ -153,7 +207,7 @@ async def update_cart_item(
 @router.delete("/cart/remove/{product_id}")
 async def remove_from_cart(
     product_id: int,
-    request,
+    request: Request,
     db: Session = Depends(get_db)
 ):
     """
@@ -184,7 +238,7 @@ async def remove_from_cart(
 
 
 @router.get("/cart")
-async def get_cart(request, db: Session = Depends(get_db)):
+async def get_cart(request: Request, db: Session = Depends(get_db)):
     """
     Получение содержимого корзины
     """
@@ -223,7 +277,7 @@ async def get_cart(request, db: Session = Depends(get_db)):
 
 
 @router.delete("/cart/clear")
-async def clear_cart(request, db: Session = Depends(get_db)):
+async def clear_cart(request: Request, db: Session = Depends(get_db)):
     """
     Очистка корзины
     """

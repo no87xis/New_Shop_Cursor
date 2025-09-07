@@ -19,6 +19,7 @@ class ProductBase(BaseModel):
     supplier_name: Optional[str] = None
     availability_status: str = "IN_STOCK"
     expected_date: Optional[date] = None
+    photo_path: Optional[str] = None
 
 
 class ProductCreate(ProductBase):
@@ -38,6 +39,7 @@ class ProductUpdate(BaseModel):
     supplier_name: Optional[str] = None
     availability_status: Optional[str] = None
     expected_date: Optional[date] = None
+    photo_path: Optional[str] = None
 
 
 class ProductInDB(ProductBase):

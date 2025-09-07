@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block title %}Аналитика и отчеты - Sirius Group V2{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">
+            <i class="fas fa-chart-bar mr-2"></i>Аналитика и отчеты
+        </h1>
+        <p class="text-gray-600">
+            Статистика и аналитика по товарам и заказам
+        </p>
+    </div>
+
+    <!-- Overall Statistics -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-blue-600">{{ product_stats.total_products or 0 }}</div>
+                <div class="text-sm text-gray-600">Всего товаров</div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-green-600">{{ shop_order_stats.total_orders or 0 }}</div>
+                <div class="text-sm text-gray-600">Всего заказов</div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-purple-600">{{ "%.2f"|format(product_stats.total_value or 0) }} ₽</div>
+                <div class="text-sm text-gray-600">Стоимость товаров</div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-yellow-600">{{ "%.2f"|format(shop_order_stats.total_revenue or 0) }} ₽</div>
+                <div class="text-sm text-gray-600">Общая выручка</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Product Statistics -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                <i class="fas fa-box mr-2"></i>Статистика товаров
+            </h3>
+            <div class="space-y-4">
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600">В наличии</span>
+                    <span class="font-semibold text-green-600">{{ product_stats.in_stock or 0 }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600">В пути</span>
+                    <span class="font-semibold text-blue-600">{{ product_stats.in_transit or 0 }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600">Под заказ</span>
+                    <span class="font-semibold text-yellow-600">{{ product_stats.on_order or 0 }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600">Низкий остаток</span>
+                    <span class="font-semibold text-red-600">{{ product_stats.low_stock or 0 }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600">Средняя цена</span>
+                    <span class="font-semibold text-gray-900">{{ "%.2f"|format(product_stats.average_price or 0) }} ₽</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Statistics -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                <i class="fas fa-shopping-cart mr-2"></i>Статистика заказов
+            </h3>
+            <div class="space-y-4">
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600">В обработке</span>
+                    <span class="font-semibold text-yellow-600">{{ shop_order_stats.pending_orders or 0 }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600">Подтверждено</span>
+                    <span class="font-semibold text-blue-600">{{ shop_order_stats.confirmed_orders or 0 }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600">В работе</span>
+                    <span class="font-semibold text-purple-600">{{ shop_order_stats.in_progress_orders or 0 }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600">Доставлено</span>
+                    <span class="font-semibold text-green-600">{{ shop_order_stats.delivered_orders or 0 }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600">Отменено</span>
+                    <span class="font-semibold text-red-600">{{ shop_order_stats.cancelled_orders or 0 }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popular Products -->
+    <div class="mt-8">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                <i class="fas fa-star mr-2"></i>Популярные товары
+            </h3>
+            {% if popular_products %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Товар
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Количество
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Цена
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Статус
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for product in popular_products %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    {% if product.photo_path %}
+                                    <div class="flex-shrink-0 h-10 w-10 mr-3">
+                                        <img class="h-10 w-10 rounded-lg object-cover" 
+                                             src="/uploads/{{ product.photo_path }}" 
+                                             alt="{{ product.name }}"
+                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        <div class="h-10 w-10 rounded-lg bg-gray-200 flex items-center justify-center" style="display: none;">
+                                            <i class="fas fa-image text-gray-400 text-xs"></i>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <div class="flex-shrink-0 h-10 w-10 mr-3">
+                                        <div class="h-10 w-10 rounded-lg bg-gray-200 flex items-center justify-center">
+                                            <i class="fas fa-image text-gray-400 text-xs"></i>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900">{{ product.name }}</div>
+                                        <div class="text-sm text-gray-500">{{ product.supplier_name or "Без поставщика" }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ product.quantity }} шт.
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ "%.2f"|format(product.sell_price_rub or 0) }} ₽
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                    {% if product.availability_status == 'IN_STOCK' %}bg-green-100 text-green-800
+                                    {% elif product.availability_status == 'IN_TRANSIT' %}bg-blue-100 text-blue-800
+                                    {% elif product.availability_status == 'ON_ORDER' %}bg-yellow-100 text-yellow-800
+                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                    {% if product.availability_status == 'IN_STOCK' %}В наличии
+                                    {% elif product.availability_status == 'IN_TRANSIT' %}В пути
+                                    {% elif product.availability_status == 'ON_ORDER' %}Под заказ
+                                    {% else %}{{ product.availability_status }}{% endif %}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-8">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100 mb-4">
+                    <i class="fas fa-box text-gray-400"></i>
+                </div>
+                <p class="text-gray-500">Нет данных о популярных товарах</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Products -->
+    <div class="mt-8">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                <i class="fas fa-clock mr-2"></i>Последние добавленные товары
+            </h3>
+            {% if recent_products %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Товар
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Дата добавления
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Цена
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Статус
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for product in recent_products %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    {% if product.photo_path %}
+                                    <div class="flex-shrink-0 h-10 w-10 mr-3">
+                                        <img class="h-10 w-10 rounded-lg object-cover" 
+                                             src="/uploads/{{ product.photo_path }}" 
+                                             alt="{{ product.name }}"
+                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        <div class="h-10 w-10 rounded-lg bg-gray-200 flex items-center justify-center" style="display: none;">
+                                            <i class="fas fa-image text-gray-400 text-xs"></i>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <div class="flex-shrink-0 h-10 w-10 mr-3">
+                                        <div class="h-10 w-10 rounded-lg bg-gray-200 flex items-center justify-center">
+                                            <i class="fas fa-image text-gray-400 text-xs"></i>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900">{{ product.name }}</div>
+                                        <div class="text-sm text-gray-500">{{ product.supplier_name or "Без поставщика" }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ product.created_at.strftime('%d.%m.%Y %H:%M') }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ "%.2f"|format(product.sell_price_rub or 0) }} ₽
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                    {% if product.availability_status == 'IN_STOCK' %}bg-green-100 text-green-800
+                                    {% elif product.availability_status == 'IN_TRANSIT' %}bg-blue-100 text-blue-800
+                                    {% elif product.availability_status == 'ON_ORDER' %}bg-yellow-100 text-yellow-800
+                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                    {% if product.availability_status == 'IN_STOCK' %}В наличии
+                                    {% elif product.availability_status == 'IN_TRANSIT' %}В пути
+                                    {% elif product.availability_status == 'ON_ORDER' %}Под заказ
+                                    {% else %}{{ product.availability_status }}{% endif %}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-8">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100 mb-4">
+                    <i class="fas fa-box text-gray-400"></i>
+                </div>
+                <p class="text-gray-500">Нет недавно добавленных товаров</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

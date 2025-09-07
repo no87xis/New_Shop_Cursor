@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block title %}Управление заказами - Sirius Group V2{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">
+            <i class="fas fa-shopping-cart mr-2"></i>Управление заказами
+        </h1>
+        <p class="text-gray-600">
+            Просмотр и управление заказами клиентов
+        </p>
+    </div>
+
+    <!-- Statistics -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-blue-600">{{ stats.total_orders or 0 }}</div>
+                <div class="text-sm text-gray-600">Всего заказов</div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-yellow-600">{{ stats.pending_orders or 0 }}</div>
+                <div class="text-sm text-gray-600">В обработке</div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-green-600">{{ stats.completed_orders or 0 }}</div>
+                <div class="text-sm text-gray-600">Выполнено</div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-red-600">{{ stats.cancelled_orders or 0 }}</div>
+                <div class="text-sm text-gray-600">Отменено</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="flex flex-wrap gap-4">
+            <div class="flex-1 min-w-64">
+                <input type="text" 
+                       id="search-input" 
+                       placeholder="Поиск по коду заказа, имени или телефону..." 
+                       value="{{ search_term or '' }}"
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <select id="status-filter" class="border border-gray-300 rounded-lg px-3 py-2">
+                <option value="">Все статусы</option>
+                <option value="PENDING" {% if current_status == 'PENDING' %}selected{% endif %}>В обработке</option>
+                <option value="CONFIRMED" {% if current_status == 'CONFIRMED' %}selected{% endif %}>Подтвержден</option>
+                <option value="IN_PROGRESS" {% if current_status == 'IN_PROGRESS' %}selected{% endif %}>В работе</option>
+                <option value="SHIPPED" {% if current_status == 'SHIPPED' %}selected{% endif %}>Отправлен</option>
+                <option value="DELIVERED" {% if current_status == 'DELIVERED' %}selected{% endif %}>Доставлен</option>
+                <option value="CANCELLED" {% if current_status == 'CANCELLED' %}selected{% endif %}>Отменен</option>
+            </select>
+            <button onclick="applyFilters()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-300">
+                <i class="fas fa-search mr-2"></i>Поиск
+            </button>
+        </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Заказ
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Клиент
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Товар
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Сумма
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Статус
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Дата
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Действия
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for order in orders %}
+                    <tr class="order-row" data-order-id="{{ order.id }}">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">{{ order.order_code }}</div>
+                                <div class="text-sm text-gray-500">ID: {{ order.id }}</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">{{ order.customer_name }}</div>
+                                <div class="text-sm text-gray-500">{{ order.customer_phone }}</div>
+                                {% if order.customer_city %}
+                                <div class="text-sm text-gray-500">{{ order.customer_city }}</div>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">{{ order.product_name }}</div>
+                                <div class="text-sm text-gray-500">Количество: {{ order.quantity }}</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ "%.2f"|format(order.total_amount or 0) }} ₽</div>
+                            {% if order.delivery_cost_rub %}
+                            <div class="text-xs text-gray-500">Доставка: {{ "%.2f"|format(order.delivery_cost_rub) }} ₽</div>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                {% if order.status == 'PENDING' %}bg-yellow-100 text-yellow-800
+                                {% elif order.status == 'CONFIRMED' %}bg-blue-100 text-blue-800
+                                {% elif order.status == 'IN_PROGRESS' %}bg-purple-100 text-purple-800
+                                {% elif order.status == 'SHIPPED' %}bg-indigo-100 text-indigo-800
+                                {% elif order.status == 'DELIVERED' %}bg-green-100 text-green-800
+                                {% elif order.status == 'CANCELLED' %}bg-red-100 text-red-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {% if order.status == 'PENDING' %}В обработке
+                                {% elif order.status == 'CONFIRMED' %}Подтвержден
+                                {% elif order.status == 'IN_PROGRESS' %}В работе
+                                {% elif order.status == 'SHIPPED' %}Отправлен
+                                {% elif order.status == 'DELIVERED' %}Доставлен
+                                {% elif order.status == 'CANCELLED' %}Отменен
+                                {% else %}{{ order.status }}{% endif %}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ order.created_at.strftime('%d.%m.%Y %H:%M') }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <button onclick="viewOrder({{ order.id }})" class="text-blue-600 hover:text-blue-900">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button onclick="updateOrderStatus({{ order.id }}, '{{ order.status }}')" class="text-green-600 hover:text-green-900">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    {% if not orders %}
+    <div class="text-center py-12">
+        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-gray-100 mb-4">
+            <i class="fas fa-shopping-cart text-gray-400 text-2xl"></i>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Заказы не найдены</h3>
+        <p class="text-gray-500 mb-6">Попробуйте изменить фильтры поиска</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Update Status Modal -->
+<div id="update-status-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div class="p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                    <i class="fas fa-edit mr-2"></i>Изменить статус заказа
+                </h3>
+                <form id="status-form" method="POST">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="new_status" class="block text-sm font-medium text-gray-700 mb-1">
+                                Новый статус
+                            </label>
+                            <select id="new_status" 
+                                    name="status"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="PENDING">В обработке</option>
+                                <option value="CONFIRMED">Подтвержден</option>
+                                <option value="IN_PROGRESS">В работе</option>
+                                <option value="SHIPPED">Отправлен</option>
+                                <option value="DELIVERED">Доставлен</option>
+                                <option value="CANCELLED">Отменен</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-3 mt-6">
+                        <button type="button" 
+                                onclick="hideUpdateStatusModal()"
+                                class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition duration-300">
+                            Отмена
+                        </button>
+                        <button type="submit" 
+                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300">
+                            <i class="fas fa-save mr-2"></i>Сохранить
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Показ модального окна обновления статуса
+function showUpdateStatusModal(orderId, currentStatus) {
+    document.getElementById('new_status').value = currentStatus;
+    document.getElementById('status-form').action = `/admin/orders/${orderId}/status`;
+    document.getElementById('update-status-modal').classList.remove('hidden');
+}
+
+// Скрытие модального окна
+function hideUpdateStatusModal() {
+    document.getElementById('update-status-modal').classList.add('hidden');
+}
+
+// Применение фильтров
+function applyFilters() {
+    const search = document.getElementById('search-input').value;
+    const status = document.getElementById('status-filter').value;
+    
+    let url = '/admin/orders?';
+    if (search) url += `search=${encodeURIComponent(search)}&`;
+    if (status) url += `status=${status}&`;
+    
+    window.location.href = url;
+}
+
+// Просмотр заказа
+function viewOrder(orderId) {
+    // Здесь можно добавить модальное окно с подробной информацией о заказе
+    alert(`Просмотр заказа ${orderId} - функция в разработке`);
+}
+
+// Обновление статуса заказа
+function updateOrderStatus(orderId, currentStatus) {
+    showUpdateStatusModal(orderId, currentStatus);
+}
+
+// Поиск при нажатии Enter
+document.getElementById('search-input').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        applyFilters();
+    }
+});
+</script>
+{% endblock %}

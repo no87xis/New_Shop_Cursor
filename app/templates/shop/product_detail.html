@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} - Sirius Group V2{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Breadcrumb -->
+    <nav class="mb-8">
+        <ol class="flex items-center space-x-2 text-sm text-gray-500">
+            <li><a href="/shop/" class="hover:text-blue-600">Каталог</a></li>
+            <li><i class="fas fa-chevron-right text-xs"></i></li>
+            <li class="text-gray-900">{{ product.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Product Image -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            {% if product.photo_path %}
+            <div class="aspect-square bg-gray-200 rounded-lg overflow-hidden">
+                <img src="/uploads/{{ product.photo_path }}" 
+                     alt="{{ product.name }}" 
+                     class="w-full h-full object-cover"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="w-full h-full bg-gray-200 flex items-center justify-center" style="display: none;">
+                    <i class="fas fa-image text-gray-400 text-6xl"></i>
+                </div>
+            </div>
+            {% else %}
+            <div class="aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
+                <i class="fas fa-image text-gray-400 text-6xl"></i>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Product Info -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h1 class="text-3xl font-bold text-gray-900 mb-4">{{ product.name }}</h1>
+            
+            <!-- Status -->
+            <div class="mb-4">
+                <span class="px-3 py-1 rounded-full text-sm font-medium
+                    {% if product.availability_status == 'IN_STOCK' %}bg-green-100 text-green-800
+                    {% elif product.availability_status == 'IN_TRANSIT' %}bg-blue-100 text-blue-800
+                    {% elif product.availability_status == 'ON_ORDER' %}bg-yellow-100 text-yellow-800
+                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                    {% if product.availability_status == 'IN_STOCK' %}В наличии
+                    {% elif product.availability_status == 'IN_TRANSIT' %}В пути
+                    {% elif product.availability_status == 'ON_ORDER' %}Под заказ
+                    {% else %}{{ product.availability_status }}{% endif %}
+                </span>
+                {% if product.availability_status == 'IN_TRANSIT' and product.expected_date %}
+                <div class="text-sm text-gray-600 mt-2">
+                    <i class="fas fa-calendar mr-1"></i>
+                    Ожидается: {{ product.expected_date.strftime('%d.%m.%Y') }}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Price -->
+            <div class="mb-6">
+                <div class="text-3xl font-bold text-blue-600 mb-2">
+                    {{ "%.2f"|format(product.sell_price_rub or 0) }} ₽
+                </div>
+                {% if product.buy_price_eur %}
+                <div class="text-sm text-gray-500">
+                    Закупочная цена: {{ "%.2f"|format(product.buy_price_eur) }} €
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Description -->
+            {% if product.description %}
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Описание</h3>
+                <p class="text-gray-600">{{ product.description }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Detailed Description -->
+            {% if product.detailed_description %}
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Подробное описание</h3>
+                <div class="text-gray-600 prose max-w-none">
+                    {{ product.detailed_description|safe }}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Product Details -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-3">Информация о товаре</h3>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <span class="font-medium text-gray-700">Количество:</span>
+                        <span class="text-gray-600">{{ product.quantity }} шт.</span>
+                    </div>
+                    {% if product.supplier_name %}
+                    <div>
+                        <span class="font-medium text-gray-700">Поставщик:</span>
+                        <span class="text-gray-600">{{ product.supplier_name }}</span>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <span class="font-medium text-gray-700">Минимальный остаток:</span>
+                        <span class="text-gray-600">{{ product.min_stock }} шт.</span>
+                    </div>
+                    <div>
+                        <span class="font-medium text-gray-700">Дата добавления:</span>
+                        <span class="text-gray-600">{{ product.created_at.strftime('%d.%m.%Y') }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="space-y-3">
+                {% if product.availability_status == 'IN_STOCK' and product.quantity > 0 %}
+                <button onclick="addToCart({{ product.id }})" class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300 text-lg font-medium">
+                    <i class="fas fa-cart-plus mr-2"></i>Добавить в корзину
+                </button>
+                {% elif product.availability_status == 'IN_TRANSIT' %}
+                <button disabled class="w-full bg-blue-300 text-blue-700 py-3 px-6 rounded-lg cursor-not-allowed text-lg font-medium">
+                    <i class="fas fa-truck mr-2"></i>Товар в пути
+                </button>
+                {% elif product.availability_status == 'ON_ORDER' %}
+                <button onclick="addToCart({{ product.id }})" class="w-full bg-yellow-600 text-white py-3 px-6 rounded-lg hover:bg-yellow-700 transition duration-300 text-lg font-medium">
+                    <i class="fas fa-shopping-cart mr-2"></i>Заказать товар
+                </button>
+                {% else %}
+                <button disabled class="w-full bg-gray-300 text-gray-500 py-3 px-6 rounded-lg cursor-not-allowed text-lg font-medium">
+                    <i class="fas fa-ban mr-2"></i>Товар недоступен
+                </button>
+                {% endif %}
+                
+                <a href="/shop/" class="w-full bg-gray-100 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-200 transition duration-300 text-center block">
+                    <i class="fas fa-arrow-left mr-2"></i>Вернуться в каталог
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Добавление товара в корзину
+async function addToCart(productId) {
+    try {
+        const response = await fetch('/api/shop/cart/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                product_id: productId,
+                quantity: 1
+            })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            // Показываем уведомление
+            showNotification('Товар добавлен в корзину!', 'success');
+            // Обновляем счетчик корзины
+            updateCartCount();
+        } else {
+            showNotification(data.message || 'Ошибка добавления товара', 'error');
+        }
+    } catch (error) {
+        console.error('Error adding to cart:', error);
+        showNotification('Ошибка добавления товара', 'error');
+    }
+}
+
+// Показ уведомлений
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+        type === 'success' ? 'bg-green-500 text-white' :
+        type === 'error' ? 'bg-red-500 text-white' :
+        'bg-blue-500 text-white'
+    }`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Обновление счетчика корзины
+async function updateCartCount() {
+    try {
+        const response = await fetch('/api/shop/cart/count');
+        const data = await response.json();
+        
+        // Обновляем счетчик в навигации (если есть)
+        const cartCountElement = document.querySelector('.cart-count');
+        if (cartCountElement) {
+            cartCountElement.textContent = data.count;
+        }
+    } catch (error) {
+        console.error('Error updating cart count:', error);
+    }
+}
+</script>
+{% endblock %}
