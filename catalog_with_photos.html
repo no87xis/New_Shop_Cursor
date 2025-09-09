@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}Каталог товаров - Sirius Group V2{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">
+            <i class="fas fa-shopping-bag mr-2"></i>Каталог товаров
+        </h1>
+        <p class="text-gray-600">
+            Выберите нужные товары и добавьте их в корзину
+        </p>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white p-4 rounded-lg shadow-md mb-8">
+        <div class="flex flex-wrap gap-4">
+            <select id="status-filter" class="border border-gray-300 rounded-lg px-3 py-2">
+                <option value="">Все статусы</option>
+                <option value="IN_STOCK">В наличии</option>
+                <option value="ON_ORDER">Под заказ</option>
+                <option value="IN_TRANSIT">В пути</option>
+            </select>
+            <input type="text" id="search-input" placeholder="Поиск товаров..." class="border border-gray-300 rounded-lg px-3 py-2 flex-1 min-w-64">
+        </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="products-grid">
+        {% for product in products %}
+        <div class="bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300 product-card"
+             data-name="{{ product.name.lower() }}" 
+             data-status="{{ product.availability_status }}">
+            
+            <!-- Product Image -->
+            <div class="w-full h-48 bg-gray-200 overflow-hidden">
+                <img src="{{ product.get_photo_url() }}" 
+                     alt="{{ product.photo_alt or product.name }}" 
+                     class="w-full h-full object-cover" 
+                     loading="lazy"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="w-full h-full flex items-center justify-center" style="display:none;">
+                    <i class="fas fa-image text-gray-400 text-3xl"></i>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <h3 class="text-lg font-semibold mb-2">{{ product.name }}</h3>
+                <p class="text-gray-600 text-sm mb-4">
+                    {{ product.description or "Описание отсутствует" }}
+                </p>
+                
+                <div class="mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-2xl font-bold text-blue-600">
+                            {{ "%.0f"|format(product.sell_price_rub or 0) }} ₽
+                        </span>
+                        <span class="text-sm px-2 py-1 rounded-full
+                            {% if product.availability_status == 'IN_STOCK' %}bg-green-100 text-green-800
+                            {% elif product.availability_status == 'ON_ORDER' %}bg-yellow-100 text-yellow-800
+                            {% else %}bg-red-100 text-red-800{% endif %}">
+                            {% if product.availability_status == 'IN_STOCK' %}В наличии
+                            {% elif product.availability_status == 'ON_ORDER' %}Под заказ
+                            {% else %}В пути{% endif %}
+                        </span>
+                    </div>
+                    <p class="text-sm text-gray-500">
+                        Количество: {{ product.quantity }}
+                    </p>
+                </div>
+                
+                <button onclick="addToCart({{ product.id }})" 
+                        class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200"
+                        {% if product.availability_status != 'IN_STOCK' %}disabled{% endif %}>
+                    {% if product.availability_status == 'IN_STOCK' %}
+                        <i class="fas fa-cart-plus mr-2"></i>Добавить в корзину
+                    {% else %}
+                        <i class="fas fa-clock mr-2"></i>Недоступно
+                    {% endif %}
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="text-center py-12" style="display: none;">
+        <i class="fas fa-search text-gray-400 text-6xl mb-4"></i>
+        <h3 class="text-xl font-semibold text-gray-600 mb-2">Товары не найдены</h3>
+        <p class="text-gray-500">Попробуйте изменить параметры поиска</p>
+    </div>
+</div>
+
+<script>
+function addToCart(productId) {
+    fetch('/api/shop/cart/add?product_id=' + productId + '&quantity=1', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Товар добавлен в корзину!', 'success');
+            updateCartCount();
+        } else {
+            showNotification('Ошибка добавления товара', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Ошибка добавления товара', 'error');
+    });
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ' + 
+        (type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white');
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+function updateCartCount() {
+    fetch('/api/shop/cart/count')
+    .then(response => response.json())
+    .then(data => {
+        const cartCount = document.getElementById('cart-count');
+        if (cartCount) {
+            cartCount.textContent = data.count;
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const statusFilter = document.getElementById('status-filter');
+    const searchInput = document.getElementById('search-input');
+    const productsGrid = document.getElementById('products-grid');
+    const emptyState = document.getElementById('empty-state');
+    const productCards = document.querySelectorAll('.product-card');
+
+    function filterProducts() {
+        const statusValue = statusFilter.value;
+        const searchValue = searchInput.value.toLowerCase();
+        let visibleCount = 0;
+
+        productCards.forEach(card => {
+            const name = card.dataset.name;
+            const status = card.dataset.status;
+            
+            const matchesStatus = !statusValue || status === statusValue;
+            const matchesSearch = !searchValue || name.includes(searchValue);
+            
+            if (matchesStatus && matchesSearch) {
+                card.style.display = 'block';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        if (visibleCount === 0) {
+            productsGrid.style.display = 'none';
+            emptyState.style.display = 'block';
+        } else {
+            productsGrid.style.display = 'grid';
+            emptyState.style.display = 'none';
+        }
+    }
+
+    statusFilter.addEventListener('change', filterProducts);
+    searchInput.addEventListener('input', filterProducts);
+});
+</script>
+{% endblock %}
