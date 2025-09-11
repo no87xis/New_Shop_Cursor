@@ -1,261 +1,88 @@
 """
-Сервис для генерации QR-кодов
+Сервис для генерации QR-кодов заказов
 """
 import qrcode
 import qrcode.image.svg
-from io import BytesIO
-import base64
 import uuid
-from typing import Optional, Dict, Any
+import os
+from typing import Optional
+from app.models.shop_order import ShopOrder
+from sqlalchemy.orm import Session
 import logging
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
-
 class QRCodeService:
-    """Сервис для работы с QR-кодами"""
+    """Сервис для работы с QR-кодами заказов"""
     
-    def __init__(self):
-        self.qr_factory = qrcode.image.svg.SvgPathImage
+    @staticmethod
+    def generate_qr_token() -> str:
+        """Генерирует уникальный токен для QR-кода"""
+        return str(uuid.uuid4())
     
-    def generate_qr_code(self, data: str, size: int = 200) -> str:
+    @staticmethod
+    def generate_qr_code(qr_token: str, order_code: str) -> str:
         """
-        Генерация QR-кода в формате base64
-        
-        Args:
-            data: Данные для кодирования
-            size: Размер QR-кода в пикселях
-            
-        Returns:
-            Base64 строка с SVG изображением
+        Генерирует QR-код и сохраняет его как SVG файл
+        Возвращает путь к файлу QR-кода
         """
         try:
+            # Создаем директорию для QR-кодов если её нет
+            qr_dir = "static/qr_codes"
+            os.makedirs(qr_dir, exist_ok=True)
+            
+            # URL для отслеживания заказа
+            tracking_url = f"http://185.239.50.157:8000/shop/o/{qr_token}"
+            
+            # Создаем QR-код
             qr = qrcode.QRCode(
                 version=1,
                 error_correction=qrcode.constants.ERROR_CORRECT_L,
                 box_size=10,
                 border=4,
             )
-            qr.add_data(data)
+            qr.add_data(tracking_url)
             qr.make(fit=True)
             
             # Создаем SVG изображение
-            img = qr.make_image(image_factory=self.qr_factory)
+            img = qr.make_image(image_factory=qrcode.image.svg.SvgPathImage)
             
-            # Конвертируем в base64
-            buffer = BytesIO()
-            img.save(buffer)
-            buffer.seek(0)
+            # Сохраняем файл
+            qr_filename = f"order_{order_code}_{qr_token[:8]}.svg"
+            qr_path = os.path.join(qr_dir, qr_filename)
             
-            svg_data = buffer.getvalue().decode('utf-8')
-            base64_data = base64.b64encode(svg_data.encode('utf-8')).decode('utf-8')
+            with open(qr_path, 'wb') as f:
+                img.save(f)
             
-            return f"data:image/svg+xml;base64,{base64_data}"
+            logger.info(f"QR-код создан: {qr_path}")
+            return f"/static/qr_codes/{qr_filename}"
             
         except Exception as e:
-            logger.error(f"Error generating QR code: {e}")
+            logger.error(f"Ошибка создания QR-кода: {e}")
             return None
     
-    def generate_order_qr_code(self, order_code: str, order_id: int) -> Dict[str, Any]:
-        """
-        Генерация QR-кода для заказа
-        
-        Args:
-            order_code: Код заказа
-            order_id: ID заказа
-            
-        Returns:
-            Словарь с данными QR-кода
-        """
+    @staticmethod
+    def update_order_qr(db: Session, order_id: int, qr_token: str, qr_code_path: str) -> bool:
+        """Обновляет заказ QR-кодом"""
         try:
-            # Создаем уникальный токен для заказа
-            qr_token = str(uuid.uuid4())
-            
-            # Данные для QR-кода
-            qr_data = {
-                "order_code": order_code,
-                "order_id": order_id,
-                "token": qr_token,
-                "timestamp": datetime.now().isoformat(),
-                "type": "order_tracking"
-            }
-            
-            # Генерируем QR-код
-            qr_code_data = f"order:{order_code}:{qr_token}"
-            qr_code_base64 = self.generate_qr_code(qr_code_data)
-            
-            return {
-                "qr_code": qr_code_base64,
-                "qr_token": qr_token,
-                "qr_data": qr_data,
-                "order_code": order_code,
-                "order_id": order_id
-            }
-            
+            order = db.query(ShopOrder).filter(ShopOrder.id == order_id).first()
+            if order:
+                order.qr_token = qr_token
+                order.qr_code_path = qr_code_path
+                db.commit()
+                logger.info(f"QR-код добавлен к заказу {order.order_code}")
+                return True
+            return False
         except Exception as e:
-            logger.error(f"Error generating order QR code: {e}")
-            return None
-    
-    def generate_shop_order_qr_code(self, order_code: str, order_id: int) -> Dict[str, Any]:
-        """
-        Генерация QR-кода для заказа магазина
-        
-        Args:
-            order_code: Код заказа
-            order_id: ID заказа
-            
-        Returns:
-            Словарь с данными QR-кода
-        """
-        try:
-            # Создаем уникальный токен для заказа
-            qr_token = str(uuid.uuid4())
-            
-            # Данные для QR-кода
-            qr_data = {
-                "order_code": order_code,
-                "order_id": order_id,
-                "token": qr_token,
-                "timestamp": datetime.now().isoformat(),
-                "type": "shop_order_tracking"
-            }
-            
-            # Генерируем QR-код
-            qr_code_data = f"shop_order:{order_code}:{qr_token}"
-            qr_code_base64 = self.generate_qr_code(qr_code_data)
-            
-            return {
-                "qr_code": qr_code_base64,
-                "qr_token": qr_token,
-                "qr_data": qr_data,
-                "order_code": order_code,
-                "order_id": order_id
-            }
-            
-        except Exception as e:
-            logger.error(f"Error generating shop order QR code: {e}")
-            return None
-    
-    def generate_product_qr_code(self, product_id: int, product_name: str) -> Dict[str, Any]:
-        """
-        Генерация QR-кода для товара
-        
-        Args:
-            product_id: ID товара
-            product_name: Название товара
-            
-        Returns:
-            Словарь с данными QR-кода
-        """
-        try:
-            # Создаем уникальный токен для товара
-            qr_token = str(uuid.uuid4())
-            
-            # Данные для QR-кода
-            qr_data = {
-                "product_id": product_id,
-                "product_name": product_name,
-                "token": qr_token,
-                "timestamp": datetime.now().isoformat(),
-                "type": "product_info"
-            }
-            
-            # Генерируем QR-код
-            qr_code_data = f"product:{product_id}:{qr_token}"
-            qr_code_base64 = self.generate_qr_code(qr_code_data)
-            
-            return {
-                "qr_code": qr_code_base64,
-                "qr_token": qr_token,
-                "qr_data": qr_data,
-                "product_id": product_id,
-                "product_name": product_name
-            }
-            
-        except Exception as e:
-            logger.error(f"Error generating product QR code: {e}")
-            return None
-    
-    def parse_qr_code_data(self, qr_data: str) -> Optional[Dict[str, Any]]:
-        """
-        Парсинг данных из QR-кода
-        
-        Args:
-            qr_data: Данные из QR-кода
-            
-        Returns:
-            Распарсенные данные или None
-        """
-        try:
-            parts = qr_data.split(':')
-            if len(parts) < 3:
-                return None
-            
-            qr_type = parts[0]
-            identifier = parts[1]
-            token = parts[2]
-            
-            return {
-                "type": qr_type,
-                "identifier": identifier,
-                "token": token,
-                "raw_data": qr_data
-            }
-            
-        except Exception as e:
-            logger.error(f"Error parsing QR code data: {e}")
-            return None
-    
-    def validate_qr_token(self, qr_data: str, expected_type: str = None) -> bool:
-        """
-        Валидация токена QR-кода
-        
-        Args:
-            qr_data: Данные из QR-кода
-            expected_type: Ожидаемый тип QR-кода
-            
-        Returns:
-            True если токен валиден
-        """
-        try:
-            parsed_data = self.parse_qr_code_data(qr_data)
-            if not parsed_data:
-                return False
-            
-            if expected_type and parsed_data.get("type") != expected_type:
-                return False
-            
-            # Здесь можно добавить дополнительную валидацию токена
-            # Например, проверку в базе данных или проверку времени создания
-            
-            return True
-            
-        except Exception as e:
-            logger.error(f"Error validating QR token: {e}")
+            logger.error(f"Ошибка обновления заказа QR-кодом: {e}")
+            db.rollback()
             return False
     
-    def generate_tracking_url(self, order_code: str, qr_token: str) -> str:
-        """
-        Генерация URL для отслеживания заказа
-        
-        Args:
-            order_code: Код заказа
-            qr_token: Токен QR-кода
-            
-        Returns:
-            URL для отслеживания
-        """
+    @staticmethod
+    def get_order_by_qr_token(db: Session, qr_token: str) -> Optional[ShopOrder]:
+        """Получает заказ по QR-токену"""
         try:
-            # Здесь должен быть базовый URL приложения
-            base_url = "http://localhost:8000"  # В продакшене это должно быть из настроек
-            
-            return f"{base_url}/track/{order_code}?token={qr_token}"
-            
+            return db.query(ShopOrder).filter(ShopOrder.qr_token == qr_token).first()
         except Exception as e:
-            logger.error(f"Error generating tracking URL: {e}")
+            logger.error(f"Ошибка поиска заказа по QR-токену: {e}")
             return None
-
-
-# Глобальный экземпляр сервиса
-qr_service = QRCodeService()

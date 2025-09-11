@@ -1,0 +1,322 @@
+{% extends "base.html" %}
+
+{% block title %}Управление товарами - Sirius Group V2{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">
+            <i class="fas fa-box mr-2"></i>Управление товарами
+        </h1>
+        <p class="text-gray-600">
+            Добавление, редактирование и управление товарами
+        </p>
+    </div>
+
+    <!-- Statistics -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-blue-600">{{ stats.total_products or 0 }}</div>
+                <div class="text-sm text-gray-600">Всего товаров</div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-green-600">{{ stats.in_stock or 0 }}</div>
+                <div class="text-sm text-gray-600">В наличии</div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-yellow-600">{{ stats.low_stock or 0 }}</div>
+                <div class="text-sm text-gray-600">Низкий остаток</div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-red-600">{{ stats.out_of_stock or 0 }}</div>
+                <div class="text-sm text-gray-600">Нет в наличии</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="mb-6 flex justify-between items-center">
+        <div class="flex space-x-4">
+            <button onclick="showAddProductModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                <i class="fas fa-plus mr-2"></i>Добавить товар
+            </button>
+            <button onclick="refreshProducts()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">
+                <i class="fas fa-sync mr-2"></i>Обновить
+            </button>
+        </div>
+        <div class="flex space-x-2">
+            <input type="text" id="search-products" placeholder="Поиск товаров..." class="border border-gray-300 rounded-lg px-3 py-2">
+            <select id="status-filter" class="border border-gray-300 rounded-lg px-3 py-2">
+                <option value="">Все статусы</option>
+                <option value="IN_STOCK">В наличии</option>
+                <option value="ON_ORDER">Под заказ</option>
+                <option value="IN_TRANSIT">В пути</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Products Table -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Фото</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Товар</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Количество</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Цена</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Статус</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Действия</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200" id="products-table-body">
+                    {% for product in products %}
+                    <tr class="product-row" data-name="{{ product.name.lower() }}" data-status="{{ product.availability_status }}">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex-shrink-0 h-12 w-12">
+                                <img src="{{ product.get_photo_url() }}" 
+                                     alt="{{ product.photo_alt or product.name }}"
+                                     class="h-12 w-12 rounded-lg object-cover"
+                                     loading="lazy"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="h-12 w-12 rounded-lg bg-gray-200 flex items-center justify-center" style="display:none;">
+                                    <i class="fas fa-image text-gray-400 text-sm"></i>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">{{ product.name }}</div>
+                                <div class="text-sm text-gray-500">{{ product.description or "Описание отсутствует" }}</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ product.quantity }}
+                            {% if product.quantity <= product.min_stock %}
+                            <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                Низкий остаток
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <div>{{ "%.0f"|format(product.sell_price_rub or 0) }} ₽</div>
+                            <div class="text-xs text-gray-500">{{ "%.2f"|format(product.buy_price_eur or 0) }} €</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                {% if product.availability_status == 'IN_STOCK' %}bg-green-100 text-green-800
+                                {% elif product.availability_status == 'ON_ORDER' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-red-100 text-red-800{% endif %}">
+                                {% if product.availability_status == 'IN_STOCK' %}В наличии
+                                {% elif product.availability_status == 'ON_ORDER' %}Под заказ
+                                {% else %}В пути{% endif %}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <button onclick="editProduct({{ product.id }})" 
+                                        class="text-blue-600 hover:text-blue-900">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="uploadPhoto({{ product.id }})" 
+                                        class="text-green-600 hover:text-green-900">
+                                    <i class="fas fa-camera"></i>
+                                </button>
+                                {% if product.photo_url != '/static/images/placeholder-product.svg' %}
+                                <button onclick="deletePhoto({{ product.id }})" 
+                                        class="text-red-600 hover:text-red-900">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Photo Upload Modal -->
+<div id="photoUploadModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div class="p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                    Загрузка фото товара
+                </h3>
+                
+                <form id="photoUploadForm" enctype="multipart/form-data">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Выберите изображение
+                        </label>
+                        <input type="file" id="photoFile" name="file" accept="image/*"
+                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                               required>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Альтернативный текст
+                        </label>
+                        <input type="text" id="photoAlt" name="alt_text" placeholder="Описание изображения"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" onclick="closePhotoModal()"
+                                class="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300">
+                            Отмена
+                        </button>
+                        <button type="submit"
+                                class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                            Загрузить
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentProductId = null;
+
+function uploadPhoto(productId) {
+    currentProductId = productId;
+    document.getElementById('photoUploadModal').classList.remove('hidden');
+}
+
+function closePhotoModal() {
+    document.getElementById('photoUploadModal').classList.add('hidden');
+    document.getElementById('photoUploadForm').reset();
+    currentProductId = null;
+}
+
+document.getElementById('photoUploadForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData();
+    const fileInput = document.getElementById('photoFile');
+    const altInput = document.getElementById('photoAlt');
+    
+    if (!fileInput.files[0]) {
+        alert('Выберите файл изображения');
+        return;
+    }
+    
+    formData.append('file', fileInput.files[0]);
+    formData.append('alt_text', altInput.value);
+    
+    try {
+        const response = await fetch('/api/admin/products/' + currentProductId + '/upload-photo', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification('Фото успешно загружено!', 'success');
+            closePhotoModal();
+            location.reload();
+        } else {
+            showNotification('Ошибка загрузки фото: ' + result.message, 'error');
+        }
+    } catch (error) {
+        console.error('Error uploading photo:', error);
+        showNotification('Ошибка загрузки фото', 'error');
+    }
+});
+
+async function deletePhoto(productId) {
+    if (!confirm('Вы уверены, что хотите удалить фото товара?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/admin/products/' + productId + '/delete-photo', {
+            method: 'DELETE'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification('Фото успешно удалено!', 'success');
+            location.reload();
+        } else {
+            showNotification('Ошибка удаления фото: ' + result.message, 'error');
+        }
+    } catch (error) {
+        console.error('Error deleting photo:', error);
+        showNotification('Ошибка удаления фото', 'error');
+    }
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ' + 
+        (type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white');
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+function editProduct(productId) {
+    // TODO: Implement product editing
+    showNotification('Редактирование товара будет добавлено позже', 'info');
+}
+
+function showAddProductModal() {
+    // TODO: Implement add product modal
+    showNotification('Добавление товара будет добавлено позже', 'info');
+}
+
+function refreshProducts() {
+    location.reload();
+}
+
+// Filter products
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-products');
+    const statusFilter = document.getElementById('status-filter');
+    const productRows = document.querySelectorAll('.product-row');
+
+    function filterProducts() {
+        const searchValue = searchInput.value.toLowerCase();
+        const statusValue = statusFilter.value;
+
+        productRows.forEach(row => {
+            const name = row.dataset.name;
+            const status = row.dataset.status;
+            
+            const matchesSearch = !searchValue || name.includes(searchValue);
+            const matchesStatus = !statusValue || status === statusValue;
+            
+            if (matchesSearch && matchesStatus) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    searchInput.addEventListener('input', filterProducts);
+    statusFilter.addEventListener('change', filterProducts);
+});
+</script>
+{% endblock %}

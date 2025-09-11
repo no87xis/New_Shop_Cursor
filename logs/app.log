@@ -1,0 +1,241 @@
+2025-09-08 05:42:54,673 - app.main - INFO - Session middleware added successfully
+2025-09-08 05:42:54,673 - app.main - WARNING - Static files directory not found
+2025-09-08 05:42:54,691 - app.main - INFO - All routers included successfully
+2025-09-08 05:43:03,104 - app.main - INFO - Session middleware added successfully
+2025-09-08 05:43:03,104 - app.main - WARNING - Static files directory not found
+2025-09-08 05:43:03,122 - app.main - INFO - All routers included successfully
+2025-09-08 05:43:03,122 - app.main - INFO - Starting Sirius Group V2 application...
+2025-09-08 05:43:03,123 - app.db - ERROR - Database connection failed: Not an executable object: 'SELECT 1'
+2025-09-08 05:43:03,123 - app.main - ERROR - Database connection failed
+2025-09-08 05:43:03,123 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-08 05:43:03,123 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("products")
+2025-09-08 05:43:03,123 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-08 05:43:03,124 - sqlalchemy.engine.Engine - INFO - PRAGMA temp.table_info("products")
+2025-09-08 05:43:03,124 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-08 05:43:03,124 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("orders")
+2025-09-08 05:43:03,124 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-08 05:43:03,124 - sqlalchemy.engine.Engine - INFO - PRAGMA temp.table_info("orders")
+2025-09-08 05:43:03,124 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-08 05:43:03,124 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("shop_orders")
+2025-09-08 05:43:03,124 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-08 05:43:03,124 - sqlalchemy.engine.Engine - INFO - PRAGMA temp.table_info("shop_orders")
+2025-09-08 05:43:03,124 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-08 05:43:03,124 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("shop_cart")
+2025-09-08 05:43:03,125 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-08 05:43:03,125 - sqlalchemy.engine.Engine - INFO - PRAGMA temp.table_info("shop_cart")
+2025-09-08 05:43:03,125 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-08 05:43:03,125 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("payment_methods")
+2025-09-08 05:43:03,125 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-08 05:43:03,125 - sqlalchemy.engine.Engine - INFO - PRAGMA temp.table_info("payment_methods")
+2025-09-08 05:43:03,125 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-08 05:43:03,125 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("payment_instruments")
+2025-09-08 05:43:03,125 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-08 05:43:03,125 - sqlalchemy.engine.Engine - INFO - PRAGMA temp.table_info("payment_instruments")
+2025-09-08 05:43:03,125 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-08 05:43:03,125 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("users")
+2025-09-08 05:43:03,125 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-08 05:43:03,125 - sqlalchemy.engine.Engine - INFO - PRAGMA temp.table_info("users")
+2025-09-08 05:43:03,125 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-08 05:43:03,126 - sqlalchemy.engine.Engine - INFO - 
+CREATE TABLE products (
+	name VARCHAR NOT NULL, 
+	description TEXT, 
+	detailed_description TEXT, 
+	quantity INTEGER NOT NULL, 
+	min_stock INTEGER NOT NULL, 
+	buy_price_eur NUMERIC(10, 2), 
+	sell_price_rub NUMERIC(10, 2), 
+	supplier_name VARCHAR, 
+	availability_status VARCHAR(20) NOT NULL, 
+	expected_date DATE, 
+	id INTEGER NOT NULL, 
+	created_at DATETIME DEFAULT (CURRENT_TIMESTAMP), 
+	updated_at DATETIME, 
+	PRIMARY KEY (id)
+)
+
+
+2025-09-08 05:43:03,126 - sqlalchemy.engine.Engine - INFO - [no key 0.00010s] ()
+2025-09-08 05:43:03,131 - sqlalchemy.engine.Engine - INFO - CREATE UNIQUE INDEX ix_products_name ON products (name)
+2025-09-08 05:43:03,131 - sqlalchemy.engine.Engine - INFO - [no key 0.00013s] ()
+2025-09-08 05:43:03,133 - sqlalchemy.engine.Engine - INFO - CREATE INDEX ix_products_id ON products (id)
+2025-09-08 05:43:03,133 - sqlalchemy.engine.Engine - INFO - [no key 0.00009s] ()
+2025-09-08 05:43:03,135 - sqlalchemy.engine.Engine - INFO - 
+CREATE TABLE payment_methods (
+	name VARCHAR NOT NULL, 
+	description VARCHAR, 
+	is_active BOOLEAN NOT NULL, 
+	id INTEGER NOT NULL, 
+	created_at DATETIME DEFAULT (CURRENT_TIMESTAMP), 
+	updated_at DATETIME, 
+	PRIMARY KEY (id)
+)
+
+
+2025-09-08 05:43:03,135 - sqlalchemy.engine.Engine - INFO - [no key 0.00011s] ()
+2025-09-08 05:43:03,137 - sqlalchemy.engine.Engine - INFO - CREATE INDEX ix_payment_methods_id ON payment_methods (id)
+2025-09-08 05:43:03,137 - sqlalchemy.engine.Engine - INFO - [no key 0.00010s] ()
+2025-09-08 05:43:03,139 - sqlalchemy.engine.Engine - INFO - 
+CREATE TABLE users (
+	username VARCHAR NOT NULL, 
+	hashed_password VARCHAR NOT NULL, 
+	role VARCHAR NOT NULL, 
+	is_active BOOLEAN NOT NULL, 
+	is_superuser BOOLEAN NOT NULL, 
+	id INTEGER NOT NULL, 
+	created_at DATETIME DEFAULT (CURRENT_TIMESTAMP), 
+	updated_at DATETIME, 
+	PRIMARY KEY (id)
+)
+
+
+2025-09-08 05:43:03,139 - sqlalchemy.engine.Engine - INFO - [no key 0.00014s] ()
+2025-09-08 05:43:03,140 - sqlalchemy.engine.Engine - INFO - CREATE UNIQUE INDEX ix_users_username ON users (username)
+2025-09-08 05:43:03,140 - sqlalchemy.engine.Engine - INFO - [no key 0.00010s] ()
+2025-09-08 05:43:03,141 - sqlalchemy.engine.Engine - INFO - CREATE INDEX ix_users_id ON users (id)
+2025-09-08 05:43:03,141 - sqlalchemy.engine.Engine - INFO - [no key 0.00008s] ()
+2025-09-08 05:43:03,142 - sqlalchemy.engine.Engine - INFO - 
+CREATE TABLE shop_orders (
+	order_code VARCHAR(8) NOT NULL, 
+	order_code_last4 VARCHAR(4) NOT NULL, 
+	customer_name VARCHAR(200) NOT NULL, 
+	customer_phone VARCHAR(20) NOT NULL, 
+	customer_city VARCHAR(100), 
+	product_id INTEGER, 
+	product_name VARCHAR(200) NOT NULL, 
+	quantity INTEGER NOT NULL, 
+	unit_price_rub NUMERIC(10, 2) NOT NULL, 
+	total_amount NUMERIC(10, 2) NOT NULL, 
+	payment_method_id INTEGER, 
+	payment_method_name VARCHAR(100), 
+	delivery_option VARCHAR(50), 
+	delivery_city_other VARCHAR(100), 
+	delivery_cost_rub NUMERIC(10, 2), 
+	status VARCHAR(20), 
+	arrival_status VARCHAR(20), 
+	arrival_notified_at DATETIME, 
+	arrival_notifications_count INTEGER, 
+	reserved_until DATETIME, 
+	expected_delivery_date DATE, 
+	qr_payload VARCHAR, 
+	qr_image_path VARCHAR, 
+	whatsapp_phone VARCHAR(20), 
+	consent_whatsapp BOOLEAN, 
+	id INTEGER NOT NULL, 
+	created_at DATETIME DEFAULT (CURRENT_TIMESTAMP), 
+	updated_at DATETIME, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(product_id) REFERENCES products (id), 
+	FOREIGN KEY(payment_method_id) REFERENCES payment_methods (id)
+)
+
+
+2025-09-08 05:43:03,142 - sqlalchemy.engine.Engine - INFO - [no key 0.00015s] ()
+2025-09-08 05:43:03,143 - sqlalchemy.engine.Engine - INFO - CREATE UNIQUE INDEX ix_shop_orders_order_code ON shop_orders (order_code)
+2025-09-08 05:43:03,143 - sqlalchemy.engine.Engine - INFO - [no key 0.00009s] ()
+2025-09-08 05:43:03,144 - sqlalchemy.engine.Engine - INFO - CREATE INDEX ix_shop_orders_customer_phone ON shop_orders (customer_phone)
+2025-09-08 05:43:03,144 - sqlalchemy.engine.Engine - INFO - [no key 0.00007s] ()
+2025-09-08 05:43:03,145 - sqlalchemy.engine.Engine - INFO - CREATE INDEX ix_shop_orders_id ON shop_orders (id)
+2025-09-08 05:43:03,145 - sqlalchemy.engine.Engine - INFO - [no key 0.00008s] ()
+2025-09-08 05:43:03,147 - sqlalchemy.engine.Engine - INFO - 
+CREATE TABLE shop_cart (
+	session_id VARCHAR NOT NULL, 
+	product_id INTEGER NOT NULL, 
+	quantity INTEGER NOT NULL, 
+	id INTEGER NOT NULL, 
+	created_at DATETIME DEFAULT (CURRENT_TIMESTAMP), 
+	updated_at DATETIME, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(product_id) REFERENCES products (id)
+)
+
+
+2025-09-08 05:43:03,147 - sqlalchemy.engine.Engine - INFO - [no key 0.00013s] ()
+2025-09-08 05:43:03,148 - sqlalchemy.engine.Engine - INFO - CREATE INDEX ix_shop_cart_id ON shop_cart (id)
+2025-09-08 05:43:03,148 - sqlalchemy.engine.Engine - INFO - [no key 0.00008s] ()
+2025-09-08 05:43:03,149 - sqlalchemy.engine.Engine - INFO - CREATE INDEX ix_shop_cart_session_id ON shop_cart (session_id)
+2025-09-08 05:43:03,149 - sqlalchemy.engine.Engine - INFO - [no key 0.00007s] ()
+2025-09-08 05:43:03,150 - sqlalchemy.engine.Engine - INFO - 
+CREATE TABLE payment_instruments (
+	name VARCHAR NOT NULL, 
+	payment_method_id INTEGER, 
+	is_active BOOLEAN NOT NULL, 
+	id INTEGER NOT NULL, 
+	created_at DATETIME DEFAULT (CURRENT_TIMESTAMP), 
+	updated_at DATETIME, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(payment_method_id) REFERENCES payment_methods (id)
+)
+
+
+2025-09-08 05:43:03,150 - sqlalchemy.engine.Engine - INFO - [no key 0.00009s] ()
+2025-09-08 05:43:03,151 - sqlalchemy.engine.Engine - INFO - CREATE INDEX ix_payment_instruments_id ON payment_instruments (id)
+2025-09-08 05:43:03,151 - sqlalchemy.engine.Engine - INFO - [no key 0.00008s] ()
+2025-09-08 05:43:03,152 - sqlalchemy.engine.Engine - INFO - 
+CREATE TABLE orders (
+	phone VARCHAR NOT NULL, 
+	customer_name VARCHAR, 
+	client_city VARCHAR(100), 
+	product_id INTEGER, 
+	product_name VARCHAR, 
+	qty INTEGER NOT NULL, 
+	unit_price_rub NUMERIC(10, 2) NOT NULL, 
+	eur_rate NUMERIC(10, 4), 
+	order_code VARCHAR(8), 
+	order_code_last4 VARCHAR(4), 
+	payment_method_id INTEGER, 
+	payment_instrument_id INTEGER, 
+	paid_amount NUMERIC(10, 2), 
+	paid_at DATETIME, 
+	payment_method VARCHAR, 
+	payment_note VARCHAR(120), 
+	status VARCHAR, 
+	arrival_status VARCHAR(20), 
+	arrival_notified_at DATETIME, 
+	arrival_notifications_count INTEGER, 
+	issued_at DATETIME, 
+	user_id VARCHAR, 
+	source VARCHAR(20), 
+	qr_payload VARCHAR, 
+	qr_image_path VARCHAR, 
+	whatsapp_phone VARCHAR(20), 
+	consent_whatsapp BOOLEAN, 
+	id INTEGER NOT NULL, 
+	created_at DATETIME DEFAULT (CURRENT_TIMESTAMP), 
+	updated_at DATETIME, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(product_id) REFERENCES products (id), 
+	FOREIGN KEY(payment_method_id) REFERENCES payment_methods (id), 
+	FOREIGN KEY(payment_instrument_id) REFERENCES payment_instruments (id), 
+	FOREIGN KEY(user_id) REFERENCES users (username)
+)
+
+
+2025-09-08 05:43:03,152 - sqlalchemy.engine.Engine - INFO - [no key 0.00017s] ()
+2025-09-08 05:43:03,153 - sqlalchemy.engine.Engine - INFO - CREATE INDEX ix_orders_id ON orders (id)
+2025-09-08 05:43:03,153 - sqlalchemy.engine.Engine - INFO - [no key 0.00007s] ()
+2025-09-08 05:43:03,154 - sqlalchemy.engine.Engine - INFO - CREATE INDEX ix_orders_phone ON orders (phone)
+2025-09-08 05:43:03,154 - sqlalchemy.engine.Engine - INFO - [no key 0.00006s] ()
+2025-09-08 05:43:03,155 - sqlalchemy.engine.Engine - INFO - CREATE UNIQUE INDEX ix_orders_order_code ON orders (order_code)
+2025-09-08 05:43:03,155 - sqlalchemy.engine.Engine - INFO - [no key 0.00007s] ()
+2025-09-08 05:43:03,155 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-09-08 05:43:03,156 - app.db - INFO - Database tables created successfully
+2025-09-08 05:43:03,156 - app.main - INFO - Application startup completed successfully
+2025-09-08 05:43:07,034 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-08 05:43:07,037 - sqlalchemy.engine.Engine - INFO - SELECT count(*) AS count_1 
+FROM (SELECT products.name AS products_name, products.description AS products_description, products.detailed_description AS products_detailed_description, products.quantity AS products_quantity, products.min_stock AS products_min_stock, products.buy_price_eur AS products_buy_price_eur, products.sell_price_rub AS products_sell_price_rub, products.supplier_name AS products_supplier_name, products.availability_status AS products_availability_status, products.expected_date AS products_expected_date, products.id AS products_id, products.created_at AS products_created_at, products.updated_at AS products_updated_at 
+FROM products) AS anon_1
+2025-09-08 05:43:07,037 - sqlalchemy.engine.Engine - INFO - [generated in 0.00016s] ()
+2025-09-08 05:43:07,040 - sqlalchemy.engine.Engine - INFO - SELECT count(*) AS count_1 
+FROM (SELECT orders.phone AS orders_phone, orders.customer_name AS orders_customer_name, orders.client_city AS orders_client_city, orders.product_id AS orders_product_id, orders.product_name AS orders_product_name, orders.qty AS orders_qty, orders.unit_price_rub AS orders_unit_price_rub, orders.eur_rate AS orders_eur_rate, orders.order_code AS orders_order_code, orders.order_code_last4 AS orders_order_code_last4, orders.payment_method_id AS orders_payment_method_id, orders.payment_instrument_id AS orders_payment_instrument_id, orders.paid_amount AS orders_paid_amount, orders.paid_at AS orders_paid_at, orders.payment_method AS orders_payment_method, orders.payment_note AS orders_payment_note, orders.status AS orders_status, orders.arrival_status AS orders_arrival_status, orders.arrival_notified_at AS orders_arrival_notified_at, orders.arrival_notifications_count AS orders_arrival_notifications_count, orders.issued_at AS orders_issued_at, orders.user_id AS orders_user_id, orders.source AS orders_source, orders.qr_payload AS orders_qr_payload, orders.qr_image_path AS orders_qr_image_path, orders.whatsapp_phone AS orders_whatsapp_phone, orders.consent_whatsapp AS orders_consent_whatsapp, orders.id AS orders_id, orders.created_at AS orders_created_at, orders.updated_at AS orders_updated_at 
+FROM orders) AS anon_1
+2025-09-08 05:43:07,041 - sqlalchemy.engine.Engine - INFO - [generated in 0.00023s] ()
+2025-09-08 05:43:07,043 - sqlalchemy.engine.Engine - INFO - SELECT count(*) AS count_1 
+FROM (SELECT shop_orders.order_code AS shop_orders_order_code, shop_orders.order_code_last4 AS shop_orders_order_code_last4, shop_orders.customer_name AS shop_orders_customer_name, shop_orders.customer_phone AS shop_orders_customer_phone, shop_orders.customer_city AS shop_orders_customer_city, shop_orders.product_id AS shop_orders_product_id, shop_orders.product_name AS shop_orders_product_name, shop_orders.quantity AS shop_orders_quantity, shop_orders.unit_price_rub AS shop_orders_unit_price_rub, shop_orders.total_amount AS shop_orders_total_amount, shop_orders.payment_method_id AS shop_orders_payment_method_id, shop_orders.payment_method_name AS shop_orders_payment_method_name, shop_orders.delivery_option AS shop_orders_delivery_option, shop_orders.delivery_city_other AS shop_orders_delivery_city_other, shop_orders.delivery_cost_rub AS shop_orders_delivery_cost_rub, shop_orders.status AS shop_orders_status, shop_orders.arrival_status AS shop_orders_arrival_status, shop_orders.arrival_notified_at AS shop_orders_arrival_notified_at, shop_orders.arrival_notifications_count AS shop_orders_arrival_notifications_count, shop_orders.reserved_until AS shop_orders_reserved_until, shop_orders.expected_delivery_date AS shop_orders_expected_delivery_date, shop_orders.qr_payload AS shop_orders_qr_payload, shop_orders.qr_image_path AS shop_orders_qr_image_path, shop_orders.whatsapp_phone AS shop_orders_whatsapp_phone, shop_orders.consent_whatsapp AS shop_orders_consent_whatsapp, shop_orders.id AS shop_orders_id, shop_orders.created_at AS shop_orders_created_at, shop_orders.updated_at AS shop_orders_updated_at 
+FROM shop_orders) AS anon_1
+2025-09-08 05:43:07,043 - sqlalchemy.engine.Engine - INFO - [generated in 0.00016s] ()
+2025-09-08 05:43:07,044 - sqlalchemy.engine.Engine - INFO - SELECT products.name AS products_name, products.description AS products_description, products.detailed_description AS products_detailed_description, products.quantity AS products_quantity, products.min_stock AS products_min_stock, products.buy_price_eur AS products_buy_price_eur, products.sell_price_rub AS products_sell_price_rub, products.supplier_name AS products_supplier_name, products.availability_status AS products_availability_status, products.expected_date AS products_expected_date, products.id AS products_id, products.created_at AS products_created_at, products.updated_at AS products_updated_at 
+FROM products ORDER BY products.created_at DESC
+ LIMIT ? OFFSET ?
+2025-09-08 05:43:07,044 - sqlalchemy.engine.Engine - INFO - [generated in 0.00013s] (6, 0)
+2025-09-08 05:43:07,050 - sqlalchemy.engine.Engine - INFO - ROLLBACK

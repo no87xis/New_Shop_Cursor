@@ -1,0 +1,350 @@
+{% extends "base.html" %}
+
+{% block title %}Тестовые заказы - Sirius Group V2{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">
+            <i class="fas fa-flask mr-2"></i>Тестовые заказы
+        </h1>
+        <p class="text-gray-600">
+            Создание и управление тестовыми заказами для демонстрации системы
+        </p>
+    </div>
+
+    <!-- Statistics -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8" id="statistics">
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-blue-600" id="total-orders">-</div>
+                <div class="text-sm text-gray-600">Всего тестовых заказов</div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-green-600" id="total-amount">-</div>
+                <div class="text-sm text-gray-600">Общая сумма</div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-yellow-600" id="pending-orders">-</div>
+                <div class="text-sm text-gray-600">В ожидании</div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-purple-600" id="completed-orders">-</div>
+                <div class="text-sm text-gray-600">Завершено</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">
+            <i class="fas fa-plus-circle mr-2"></i>Создать тестовый заказ
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Random Order -->
+            <div class="border border-gray-200 rounded-lg p-4">
+                <h3 class="text-lg font-medium text-gray-800 mb-3">Случайный заказ</h3>
+                <p class="text-gray-600 text-sm mb-4">Создает заказ со случайными товарами и данными клиента</p>
+                
+                <form id="random-order-form" class="space-y-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Количество товаров</label>
+                        <input type="number" id="items-count" name="items_count" min="1" max="10" value="3"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Имя клиента (необязательно)</label>
+                        <input type="text" id="customer-name" name="customer_name" placeholder="Оставить пустым для автогенерации"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Телефон (необязательно)</label>
+                        <input type="text" id="customer-phone" name="customer_phone" placeholder="Оставить пустым для автогенерации"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200">
+                        <i class="fas fa-random mr-2"></i>Создать случайный заказ
+                    </button>
+                </form>
+            </div>
+
+            <!-- From Cart -->
+            <div class="border border-gray-200 rounded-lg p-4">
+                <h3 class="text-lg font-medium text-gray-800 mb-3">Заказ из корзины</h3>
+                <p class="text-gray-600 text-sm mb-4">Создает заказ из товаров в текущей корзине</p>
+                
+                <form id="cart-order-form" class="space-y-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Имя клиента *</label>
+                        <input type="text" id="cart-customer-name" name="customer_name" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Телефон *</label>
+                        <input type="text" id="cart-customer-phone" name="customer_phone" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Адрес доставки *</label>
+                        <input type="text" id="delivery-address" name="delivery_address" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition duration-200">
+                        <i class="fas fa-shopping-cart mr-2"></i>Создать заказ из корзины
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Actions -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">
+            <i class="fas fa-layer-group mr-2"></i>Массовые операции
+        </h2>
+        
+        <div class="flex flex-wrap gap-4">
+            <button onclick="generateSampleData(5)" class="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition duration-200">
+                <i class="fas fa-magic mr-2"></i>Создать 5 демо-заказов
+            </button>
+            <button onclick="generateSampleData(10)" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition duration-200">
+                <i class="fas fa-database mr-2"></i>Создать 10 демо-заказов
+            </button>
+            <button onclick="refreshStatistics()" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition duration-200">
+                <i class="fas fa-sync mr-2"></i>Обновить статистику
+            </button>
+        </div>
+    </div>
+
+    <!-- Recent Orders -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="p-6 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-800">
+                <i class="fas fa-history mr-2"></i>Последние тестовые заказы
+            </h2>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Клиент</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Сумма</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Статус</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дата</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Действия</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200" id="recent-orders-table">
+                    <tr>
+                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                            Загрузка данных...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+// Загрузка статистики при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    refreshStatistics();
+});
+
+// Обновление статистики
+async function refreshStatistics() {
+    try {
+        const response = await fetch('/api/admin/test-orders/statistics');
+        const data = await response.json();
+        
+        if (data.success !== false) {
+            document.getElementById('total-orders').textContent = data.total_test_orders || 0;
+            document.getElementById('total-amount').textContent = (data.total_amount || 0).toFixed(0) + ' ₽';
+            document.getElementById('pending-orders').textContent = data.status_distribution?.PENDING || 0;
+            document.getElementById('completed-orders').textContent = data.status_distribution?.COMPLETED || 0;
+            
+            // Обновляем таблицу последних заказов
+            updateRecentOrdersTable(data.recent_orders || []);
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки статистики:', error);
+        showNotification('Ошибка загрузки статистики', 'error');
+    }
+}
+
+// Обновление таблицы последних заказов
+function updateRecentOrdersTable(orders) {
+    const tbody = document.getElementById('recent-orders-table');
+    
+    if (orders.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">Нет тестовых заказов</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = orders.map(order => `
+        <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#${order.id}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${order.customer_name}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${order.total_amount.toFixed(0)} ₽</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                    ${getStatusClass(order.status)}">
+                    ${getStatusText(order.status)}
+                </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                ${new Date(order.created_at).toLocaleString('ru-RU')}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <a href="/admin/orders/${order.id}" class="text-blue-600 hover:text-blue-900">
+                    <i class="fas fa-eye mr-1"></i>Просмотр
+                </a>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Получение CSS класса для статуса
+function getStatusClass(status) {
+    switch (status) {
+        case 'PENDING': return 'bg-yellow-100 text-yellow-800';
+        case 'CONFIRMED': return 'bg-blue-100 text-blue-800';
+        case 'PROCESSING': return 'bg-purple-100 text-purple-800';
+        case 'SHIPPED': return 'bg-indigo-100 text-indigo-800';
+        case 'COMPLETED': return 'bg-green-100 text-green-800';
+        case 'CANCELLED': return 'bg-red-100 text-red-800';
+        default: return 'bg-gray-100 text-gray-800';
+    }
+}
+
+// Получение текста статуса
+function getStatusText(status) {
+    switch (status) {
+        case 'PENDING': return 'В ожидании';
+        case 'CONFIRMED': return 'Подтвержден';
+        case 'PROCESSING': return 'В обработке';
+        case 'SHIPPED': return 'Отправлен';
+        case 'COMPLETED': return 'Завершен';
+        case 'CANCELLED': return 'Отменен';
+        default: return status;
+    }
+}
+
+// Создание случайного заказа
+document.getElementById('random-order-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData.entries());
+    
+    // Преобразуем пустые строки в null
+    if (!data.customer_name) data.customer_name = null;
+    if (!data.customer_phone) data.customer_phone = null;
+    data.items_count = parseInt(data.items_count);
+    
+    try {
+        const response = await fetch('/api/admin/test-orders/create-random', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification(`Тестовый заказ #${result.order_id} создан успешно!`, 'success');
+            this.reset();
+            refreshStatistics();
+        } else {
+            showNotification('Ошибка создания заказа: ' + result.message, 'error');
+        }
+    } catch (error) {
+        console.error('Ошибка создания заказа:', error);
+        showNotification('Ошибка создания заказа', 'error');
+    }
+});
+
+// Создание заказа из корзины
+document.getElementById('cart-order-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData.entries());
+    
+    try {
+        const response = await fetch('/api/admin/test-orders/create-from-cart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification(`Заказ #${result.order_id} создан из корзины!`, 'success');
+            this.reset();
+            refreshStatistics();
+        } else {
+            showNotification('Ошибка создания заказа: ' + result.message, 'error');
+        }
+    } catch (error) {
+        console.error('Ошибка создания заказа:', error);
+        showNotification('Ошибка создания заказа', 'error');
+    }
+});
+
+// Генерация демо-данных
+async function generateSampleData(count) {
+    if (!confirm(`Создать ${count} тестовых заказов?`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/admin/test-orders/generate-sample-data?count=${count}`, {
+            method: 'GET'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification(`Создано ${count} тестовых заказов!`, 'success');
+            refreshStatistics();
+        } else {
+            showNotification('Ошибка генерации данных: ' + result.message, 'error');
+        }
+    } catch (error) {
+        console.error('Ошибка генерации данных:', error);
+        showNotification('Ошибка генерации данных', 'error');
+    }
+}
+
+// Показ уведомлений
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ' + 
+        (type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white');
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}
